@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  username        String
+  email           String
+  password        String
+  givenName       String?  @map("given_name")
+  familyName      String?  @map("family_name")
+  location        String?
+  website         String?
+  bio             String?
+  avatarImagePath String?  @map("avatar_image_path")
+  emailValidated  Boolean? @default(false) @map("email_validated")
+
+  refreshToken RefreshToken?
+  rating       Rating[]
+  ratingLike   RatingLike[]
+  followers    UserFollow[]  @relation("follower")
+  following    UserFollow[]  @relation("following")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  expiresAt DateTime @map("expires_at")
+  issuedAt  DateTime @default(now()) @map("issued_at")
+  isValid   Boolean  @default(true) @map("is_valid")
+  userId    Int      @unique
+  forUser   User     @relation(fields: [userId], references: [id])
+}
+
+// An instance of movie should only be created if an interaction exists
+model Movie {
+  id         Int      @id @default(autoincrement())
+  tmdbId     Int      @map("tmdb_id")
+  title      String
+  genres     Json
+  overview   String
+  posterPath String   @map("poster_path")
+  year       Int
+  duration   Int
+  rating     Rating[]
+}
+
+model Rating {
+  id         Int     @id @default(autoincrement())
+  userId     Int     @map("user_id")
+  movieId    Int     @map("movie_id")
+  rating     Decimal
+  commentary String?
+
+  toMovie    Movie        @relation(fields: [movieId], references: [id])
+  fromUser   User         @relation(fields: [userId], references: [id])
+  ratingLike RatingLike[]
+
+  @@unique([userId, movieId])
+}
+
+model RatingLike {
+  userId   Int @map("user_id")
+  ratingId Int @map("rating_id")
+
+  user   User   @relation(fields: [userId], references: [id])
+  rating Rating @relation(fields: [ratingId], references: [id])
+
+  @@unique([userId, ratingId])
+}
+
+model UserFollow {
+  followerId  Int @map("follower_id")
+  followingId Int @map("following_id")
+
+  follower  User @relation("follower", fields: [followerId], references: [id])
+  following User @relation("following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
