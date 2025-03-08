@@ -15,7 +15,7 @@ def create_database_instance(db_name: str, db_user: str, db_password: str):
 
 
 def create_enviroment_variables(database_url: str):
-    envs = {"DATABASE_URL": database_url}
+    envs = {"DATABASE_URL": database_url, "NODE_ENV": "development"}
 
     file_result = ""
     for name, value in envs.items():
