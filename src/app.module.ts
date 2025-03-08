@@ -3,6 +3,8 @@ import { PrismaService } from './services/prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { UserModule } from './modules/user/user.module';
+import { AuthenticationModule } from './modules/authentication/authentication.module';
 
 // dynamically import ServeStatic Module if the enviroment is development
 function importStaticModuleIfDevEnv() {
@@ -18,6 +20,8 @@ function importStaticModuleIfDevEnv() {
     imports: [
         ...importStaticModuleIfDevEnv(),
         ConfigModule.forRoot({ isGlobal: true }),
+        UserModule,
+        AuthenticationModule,
     ],
     controllers: [],
     providers: [PrismaService],
