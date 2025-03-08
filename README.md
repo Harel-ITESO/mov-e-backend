@@ -8,6 +8,16 @@ First, clone the repository in your local computer to be able to modify the sour
 
 ```bash
 git clone https://github.com/Harel-ITESO/mov-e-backend.git
+
+
+```
+
+### RECOMMENDED
+
+This project uses the NodeJS version specified on `.nvmrc`. I **HIGHLY** recommend you use [nvm](https://github.com/nvm-sh/nvm) as a node version manager and run the following command before running anything node related commands
+
+```bash
+nvm use
 ```
 
 ### Install dependencies
