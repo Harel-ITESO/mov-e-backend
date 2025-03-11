@@ -15,7 +15,7 @@ def create_database_instance(db_name: str, db_user: str, db_password: str):
 
 
 def create_enviroment_variables(database_url: str):
-    envs = {"DATABASE_URL": database_url}
+    envs = {"DATABASE_URL": database_url, "NODE_ENV": "development"}
 
     file_result = ""
     for name, value in envs.items():
@@ -28,6 +28,7 @@ def create_enviroment_variables(database_url: str):
 def link_orm_to_database():
     npx_result = subprocess.run(
         ["npx", "prisma", "generate", "&&", "npx", "prisma", "db", "push"],
+        shell=True,
         capture_output=True,
         text=True,
     )
