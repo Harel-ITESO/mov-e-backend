@@ -28,6 +28,7 @@ def create_enviroment_variables(database_url: str):
 def link_orm_to_database():
     npx_result = subprocess.run(
         ["npx", "prisma", "generate", "&&", "npx", "prisma", "db", "push"],
+        shell=True,
         capture_output=True,
         text=True,
     )
