@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/services/prisma/prisma.service';
-import { CreateUserDto } from './model/create-user.dto';
-import { hashString } from 'src/util/hash';
+import { CreateUserDto } from './model/dto/create-user.dto';
 
 @Injectable()
 export class UserService {
@@ -25,13 +24,14 @@ export class UserService {
      * @param userId Id of the user
      * @returns The user if found or `null`
      */
-    public async getUserById(userId: number) {
-        const user = await this.prismaService.user.findFirst({
+    public async getUserById(userId: number, filterPassword?: boolean) {
+        const user = await this.prismaService.user.findFirstOrThrow({
             where: {
                 id: userId,
             },
         });
-        return this.filterPasswordFromUser(user);
+        if (filterPassword) return this.filterPasswordFromUser(user);
+        return user;
     }
 
     /**
@@ -41,12 +41,11 @@ export class UserService {
      */
     public async createUser(userData: CreateUserDto) {
         const { email, password, username } = userData;
-        const hashedPassword = await hashString(password);
         const userCreated = await this.prismaService.user.create({
             data: {
                 username,
                 email,
-                password: hashedPassword,
+                password,
                 emailValidated: false,
             },
         });

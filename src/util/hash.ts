@@ -1,13 +1,12 @@
 import * as bcrypt from 'bcrypt';
 
 /**
- *  Generate hash with random salt
+ *  Generate hash with 12 steps
  * @param str
  * @returns
  */
 export async function hashString(str: string) {
-    const salt = await bcrypt.genSalt();
-    return await bcrypt.hash(str, salt);
+    return await bcrypt.hash(str, 12);
 }
 
 /**
