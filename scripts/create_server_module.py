@@ -4,7 +4,8 @@ import subprocess
 
 def create_server_module(module_name: str):
     subprocess.run(
-        ["npx", "nest", "g", "resource", f"modules/{module_name}", "--no-spec"]
+        ["npx", "nest", "g", "resource", f"modules/{module_name}", "--no-spec"],
+        shell=True,
     )
 
 
