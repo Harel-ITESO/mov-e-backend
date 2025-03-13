@@ -1,1 +1,39 @@
+# Version Control
+.git
+.gitignore
+
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+coverage
+.nyc_output
+
+# Environment and config files
+.env
+.env.*
+.vscode
+.idea
+
+# Test files
+test
+**/*.spec.ts
+**/*.test.ts
+
+# Development scripts & docs
 scripts/*.py
+README.md
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+
+# Temporary files
+.temp
+.tmp
+pids
+*.pid
+*.seed
+*.pid.lock

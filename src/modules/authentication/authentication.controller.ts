@@ -1,6 +1,13 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    NotFoundException,
+    Post,
+} from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { RegisterUserDto } from './model/dto/register-user.dto';
+import { LoginUserDto } from './model/dto/login-user.dto';
 
 // v1/api/authentication
 @Controller('authentication')
@@ -16,5 +23,19 @@ export class AuthenticationController {
             throw new BadRequestException('Passwords do not match');
         const userRegistered = await this.authenticationService.register(data);
         return userRegistered;
+    }
+
+    // v1/api/authentication/login
+    @Post('login')
+    public async login(@Body() { emailOrUsername, password }: LoginUserDto) {
+        try {
+            await this.authenticationService.login(emailOrUsername, password);
+            return { token: 'jwt token' }; // TODO: Implement JWT functionality
+        } catch (e: any) {
+            if (e instanceof Error)
+                throw new NotFoundException(
+                    'Invalid email, username or password',
+                );
+        }
     }
 }
