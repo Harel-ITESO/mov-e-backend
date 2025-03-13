@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { CreateUserDto } from './model/dto/create-user.dto';
 
@@ -29,6 +29,22 @@ export class UserService {
             where: {
                 id: userId,
             },
+        });
+        if (filterPassword) return this.filterPasswordFromUser(user);
+        return user;
+    }
+
+    /**
+     * Finds a user by a given WHERE clause
+     * You can use this method to find a user by email, username, etc.
+     * @param whereClause The WHERE clause to find the user
+     */
+    public async findUserWhere(
+        whereClause: Prisma.UserWhereUniqueInput,
+        filterPassword?: boolean,
+    ) {
+        const user = await this.prismaService.user.findFirstOrThrow({
+            where: whereClause,
         });
         if (filterPassword) return this.filterPasswordFromUser(user);
         return user;
