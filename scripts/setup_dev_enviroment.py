@@ -9,8 +9,9 @@ def create_database_instance(db_name: str, db_user: str, db_password: str):
     command = f"docker run --name mov-e-database -e POSTGRES_PASSWORD={db_password} -e POSTGRES_USER={db_user} -e POSTGRES_DB={db_name} -p 5432:5432 -d postgres"
     print("Setting up Database, please wait, this may take a while...")
     docker_result = subprocess.run(
-        shlex.split(command), capture_output=True, text=True, shell=True
+        command, capture_output=True, text=True, shell=True
     )
+    print(docker_result.stderr)
     # Changed: check exit code, not stderr, to determine errors.
     if docker_result.returncode != 0:
         raise RuntimeError(docker_result.stderr)
@@ -20,8 +21,6 @@ def create_enviroment_variables(database_url: str):
     envs = {
         "DATABASE_URL": database_url,
         "NODE_ENV": "development",
-        "ACCESS_JWT_SECRET": "unsafe",
-        "REFRESH_JWT_SECRET": "unsafe_refresh",
     }
 
     file_result = ""
@@ -33,8 +32,9 @@ def create_enviroment_variables(database_url: str):
 
 
 def link_orm_to_database():
+    command = "npx prisma generate && npx prisma db push"
     npx_result = subprocess.run(
-        ["npx", "prisma", "generate", "&&", "npx", "prisma", "db", "push"],
+        command,
         shell=True,
         capture_output=True,
         text=True,
