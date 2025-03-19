@@ -3,9 +3,12 @@ import subprocess
 
 
 def create_server_module(module_name: str):
+    command = f"npx nest g resource modules/{module_name} --no-spec"
     subprocess.run(
-        ["npx", "nest", "g", "resource", f"modules/{module_name}", "--no-spec"],
+        command,
         shell=True,
+        # capture_output=True,
+        # text=True,
     )
 
 
