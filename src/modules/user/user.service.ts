@@ -67,4 +67,14 @@ export class UserService {
         });
         return this.filterPasswordFromUser(userCreated);
     }
+
+    public async updateUser(id: number, dataToUpdate: User) {
+        const userUpdated = await this.prismaService.user.update({
+            data: dataToUpdate,
+            where: {
+                id
+            }
+        });
+        return userUpdated;
+    }
 }

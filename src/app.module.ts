@@ -6,10 +6,11 @@ import { AuthenticationModule } from './modules/authentication/authentication.mo
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MoviesModule } from './modules/movies/movies.module';
+import { NODE_ENV } from './util/globals';
 
 // dynamically import ServeStatic Module if the enviroment is development
 function importStaticModuleIfDevEnv() {
-    if (process.env.NODE_ENV !== 'development') return [];
+    if (NODE_ENV !== 'development') return [];
     return [
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'uploads'),

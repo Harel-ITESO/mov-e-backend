@@ -14,7 +14,7 @@ export class AuthenticationService {
      * @param emailOrUsername The email or the username of the user
      * @returns The found user
      */
-    private getUser(emailOrUsername: string) {
+    public getUser(emailOrUsername: string) {
         if (isEmail(emailOrUsername)) {
             return this.userService.findUserWhere({ email: emailOrUsername });
         }
@@ -47,6 +47,15 @@ export class AuthenticationService {
         const user = (await this.getUser(emailOrUsername)) as User;
         const isPassword = await compareHash(user.password, password);
         if (!isPassword) throw new Error('Invalid password');
+        if (!user.emailValidated) throw new Error('Email not validated');
         return user;
+    }
+
+    public async updateValidEmail(user: User) {
+        const dataToUpdate = {
+            emailValidated: true
+        } as User;
+        const userUpdated = await this.userService.updateUser(user.id, dataToUpdate);
+        return userUpdated;
     }
 }
