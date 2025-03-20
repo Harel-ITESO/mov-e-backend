@@ -3,19 +3,9 @@ import { PrismaService } from './services/prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
 import { AuthenticationModule } from './modules/authentication/authentication.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { MoviesModule } from './modules/movies/movies.module';
-
-// dynamically import ServeStatic Module if the enviroment is development
-function importStaticModuleIfDevEnv() {
-    if (process.env.NODE_ENV !== 'development') return [];
-    return [
-        ServeStaticModule.forRoot({
-            rootPath: join(__dirname, '..', 'uploads'),
-        }),
-    ];
-}
+import { DynamoService } from './services/aws/dynamo/dynamo.service';
+import { SessionModule } from './modules/session/session.module';
 
 @Module({
     imports: [
@@ -23,8 +13,9 @@ function importStaticModuleIfDevEnv() {
         UserModule,
         AuthenticationModule,
         MoviesModule,
+        SessionModule,
     ],
     controllers: [],
-    providers: [PrismaService],
+    providers: [PrismaService, DynamoService],
 })
 export class AppModule {}

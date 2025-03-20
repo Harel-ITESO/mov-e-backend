@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { CreateUserDto } from './model/dto/create-user.dto';
+import { UserWithoutPassword } from './model/types/user-without-password';
 
 @Injectable()
 export class UserService {
@@ -12,7 +13,9 @@ export class UserService {
      * @param user The user data to filter
      * @returns The filtered user data
      */
-    private filterPasswordFromUser(user: User | null) {
+    public filterPasswordFromUser(
+        user: User | null,
+    ): UserWithoutPassword | null {
         if (!user) return null;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...rest } = user;
