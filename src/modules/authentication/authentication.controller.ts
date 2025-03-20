@@ -2,12 +2,18 @@ import {
     BadRequestException,
     Body,
     Controller,
-    NotFoundException,
     Post,
+    Req,
+    Res,
+    UnauthorizedException,
+    UseGuards,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { RegisterUserDto } from './model/dto/register-user.dto';
-import { LoginUserDto } from './model/dto/login-user.dto';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { Request, Response } from 'express';
+import { UserWithoutPassword } from '../user/model/types/user-without-password';
+import { SessionAuthGuard } from './guards/session-auth.guard';
 
 // v1/api/authentication
 @Controller('authentication')
@@ -27,15 +33,36 @@ export class AuthenticationController {
 
     // v1/api/authentication/login
     @Post('login')
-    public async login(@Body() { emailOrUsername, password }: LoginUserDto) {
-        try {
-            await this.authenticationService.login(emailOrUsername, password);
-            return { token: 'jwt token' }; // TODO: Implement JWT functionality
-        } catch (e: any) {
-            if (e instanceof Error)
-                throw new NotFoundException(
-                    'Invalid email, username or password',
-                );
-        }
+    @UseGuards(LocalAuthGuard)
+    public async login(
+        @Req() request: Request,
+        @Res({ passthrough: true }) response: Response,
+    ) {
+        const user = request.user as UserWithoutPassword;
+        const session = await this.authenticationService.generateSession(
+            user.id,
+        );
+        const { sessionId, expiresAt } = session;
+        response.cookie('sessionId', sessionId, {
+            expires: new Date(expiresAt),
+            httpOnly: true,
+            signed: true,
+        });
+        return { message: "You're logged in" };
+    }
+
+    // v1/api/authentication/logout
+    @Post('logout')
+    @UseGuards(SessionAuthGuard)
+    public async logout(
+        @Req() request: Request,
+        @Res({ passthrough: true }) response: Response,
+    ) {
+        const sessionId = request.signedCookies['sessionId'] as string;
+        if (!sessionId)
+            throw new UnauthorizedException('You are not logged in');
+        await this.authenticationService.logoutFromSession(sessionId);
+        response.clearCookie('sessionId');
+        return { message: 'Successfully logged out' };
     }
 }

@@ -26,20 +26,10 @@ model User {
   avatarImagePath String?  @map("avatar_image_path")
   emailValidated  Boolean? @default(false) @map("email_validated")
 
-  refreshToken RefreshToken?
-  rating       Rating[]
-  ratingLike   RatingLike[]
-  followers    UserFollow[]  @relation("follower")
-  following    UserFollow[]  @relation("following")
-}
-
-model RefreshToken {
-  id        Int      @id @default(autoincrement())
-  expiresAt DateTime @map("expires_at")
-  issuedAt  DateTime @default(now()) @map("issued_at")
-  isValid   Boolean  @default(true) @map("is_valid")
-  userId    Int      @unique
-  forUser   User     @relation(fields: [userId], references: [id])
+  rating     Rating[]
+  ratingLike RatingLike[]
+  followers  UserFollow[] @relation("follower")
+  following  UserFollow[] @relation("following")
 }
 
 // An instance of movie should only be created if an interaction exists
