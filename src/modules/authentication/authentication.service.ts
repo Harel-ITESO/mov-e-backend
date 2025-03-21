@@ -79,4 +79,12 @@ export class AuthenticationService {
         const userUpdated = await this.userService.updateUser(user.id, dataToUpdate);
         return userUpdated;
     }
+
+    public async updateValidEmail(user: User) {
+        const dataToUpdate = {
+            emailValidated: true
+        } as User;
+        const userUpdated = await this.userService.updateUser(user.id, dataToUpdate);
+        return userUpdated;
+    }
 }

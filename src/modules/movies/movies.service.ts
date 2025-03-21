@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+<<<<<<< HEAD
 import { EnvConfigService } from 'src/services/env-config.service';
 
 type TmdbMovie = {
@@ -14,6 +15,17 @@ type TmdbMovie = {
 export class MoviesService {
     private API_URL = 'https://api.themoviedb.org/3';
     private API_KEY: string;
+=======
+import { Movie } from '@prisma/client';
+import { TMDB_API_KEY } from 'src/util/globals';
+
+@Injectable()
+export class MoviesService {
+  // URL base para consultas a TMDb
+  private API_URL = 'https://api.themoviedb.org/3';
+  // Clave de API de TMDb almacenada en variables de entorno
+  private API_KEY = TMDB_API_KEY;
+>>>>>>> 0abafb2072e58d5657007950e927b2f6494c207f
 
     constructor(
         private readonly httpService: HttpService,

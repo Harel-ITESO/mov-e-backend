@@ -71,6 +71,7 @@ export class UserService {
         return this.filterPasswordFromUser(userCreated);
     }
 
+<<<<<<< HEAD
     /**
      * Updates the user data on database
      * @param id The user id
@@ -80,6 +81,11 @@ export class UserService {
     public async updateUser(id: number, userData: User): Promise<User> {
         const userUpdated = await this.prismaService.user.update({
             data: userData,
+=======
+    public async updateUser(id: number, dataToUpdate: User) {
+        const userUpdated = await this.prismaService.user.update({
+            data: dataToUpdate,
+>>>>>>> 0abafb2072e58d5657007950e927b2f6494c207f
             where: {
                 id
             }
