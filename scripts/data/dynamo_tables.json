@@ -17,5 +17,32 @@
             "ReadCapacityUnits": 1,
             "WriteCapacityUnits": 1
         }
+    },
+    {
+        "TableName": "one-time-password",
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "email",
+                "AttributeType": "S"
+            },
+            {
+                "AttributeName": "otp",
+                "AttributeType": "S"
+            },
+            {
+                "AttributeName": "expiration",
+                "AttributeType": "N"
+            }
+        ],
+        "KeySchema": [
+            {
+                "AttributeName": "email",
+                "KeyType": "HASH"
+            }
+        ],
+        "ProvisionedThroughput": {
+            "ReadCapacityUnits": 1,
+            "WriteCapacityUnits": 1
+        }
     }
 ]

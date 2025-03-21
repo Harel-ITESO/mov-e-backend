@@ -1,13 +1,18 @@
 import {
     AttributeValue,
-    DeleteItemCommand,
     DynamoDBClient,
     GetItemCommand,
     PutItemCommand,
+    DeleteItemCommand,
     ScanCommand,
 } from '@aws-sdk/client-dynamodb';
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { EnvConfigService } from 'src/services/env-config.service';
+
+export enum DYNAMO_TABLES {
+    OTP = 'one-time-password',
+    SESSIONS = 'sessions'
+}
 
 type ItemKey = Record<string, AttributeValue>;
 
@@ -15,68 +20,79 @@ type ItemKey = Record<string, AttributeValue>;
 export class DynamoService {
     private readonly client: DynamoDBClient;
 
-    constructor(private readonly configService: ConfigService) {
-        const enviroment = this.configService.getOrThrow<string>('NODE_ENV');
-        if (enviroment === 'development') {
+    constructor(private envConfigService: EnvConfigService) {
+        if (envConfigService.isDevEnv()) {
             const options = {
-                region: 'local',
-                endpoint: this.configService.getOrThrow<string>(
-                    'DEV_DYNAMO_ENDPOINT',
-                ),
+                region: envConfigService.AWS_REGION,
+                endpoint: envConfigService.DEV_DYNAMO_ENDPOINT,
             };
             this.client = new DynamoDBClient(options);
         } else {
-            this.client = new DynamoDBClient({ region: 'us-east-1' });
+            const options = {
+                region: envConfigService.AWS_REGION,
+                credentials: {
+                    accessKeyId: envConfigService.AWS_ACCESS_KEY_ID,
+                    secretAccessKey: envConfigService.AWS_SECRET_ACCESS_KEY
+                }
+            };
+            this.client = new DynamoDBClient(options);
         }
+    }
+
+    /**
+     * Retrieves an item from a table
+     * @param TableName The table name
+     * @param Key The key of the item
+     * @returns Response from the operation
+     */
+    findOne(TableName: DYNAMO_TABLES, Key: ItemKey) {
+        const params = { TableName, Key };
+        return this.client.send(new GetItemCommand(params));
+    }
+
+    /**
+     * Retrieves an item from a table, if not found, throws a NotFoundException
+     * @param TableName
+     * @param Item
+     * @returns Response from the operation
+     */
+    async findOneOrThrow(TableName: DYNAMO_TABLES, Key: ItemKey, errorMessage: string) {
+        const register = await this.findOne(TableName, Key);
+        if (!register) {
+            throw new NotFoundException(errorMessage);
+        }
+        return register;
     }
 
     /**
      * Lists all items from a table
      * @param tableName
-     * @returns
-     */
-    public async listItemsFromTable(tableName: string) {
-        return await this.client.send(
-            new ScanCommand({ TableName: tableName }),
-        );
-    }
-
-    /**
-     * Creates an item on a table
-     * @param tableName
-     * @param item
-     * @returns
-     */
-    public async createItemOnTable(tableName: string, item: ItemKey) {
-        const created = await this.client.send(
-            new PutItemCommand({ TableName: tableName, Item: item }),
-        );
-        return created;
-    }
-
-    /**
-     * Retrieves an item from a table
-     * @param tableName The table name
-     * @param key The key of the item
-     * @returns The item if found or `null`
-     */
-    public async getItemFromTable(tableName: string, key: ItemKey) {
-        const item = await this.client.send(
-            new GetItemCommand({ TableName: tableName, Key: key }),
-        );
-        return item.Item;
-    }
-
-    /**
-     * Deletes an Item from a table
-     * @param tableName The name of the table
-     * @param key The key of the item
      * @returns Response from the operation
      */
-    public async deleteItemFromTable(tableName: string, key: ItemKey) {
-        const item = await this.client.send(
-            new DeleteItemCommand({ TableName: tableName, Key: key }),
-        );
-        return item;
+    findAll(TableName: DYNAMO_TABLES) {
+        const params = { TableName };
+        return this.client.send(new ScanCommand(params));
+    }
+
+    /**
+     * Puts an item on a table
+     * @param TableName
+     * @param Item
+     * @returns Response from the operation
+     */
+    putOne(TableName: DYNAMO_TABLES, Item: ItemKey) {
+        const params = { TableName, Item };
+        return this.client.send(new PutItemCommand(params));
+    }
+
+    /**
+     * Deletes an item from a table
+     * @param TableName The name of the table
+     * @param Key The key of the item
+     * @returns Response from the operation
+     */
+    deleteOne(TableName: DYNAMO_TABLES, Key: ItemKey) {
+        const params = { TableName, Key };
+        return this.client.send(new DeleteItemCommand(params));
     }
 }

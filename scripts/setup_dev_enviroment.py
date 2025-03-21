@@ -61,6 +61,7 @@ def create_enviroment_variables(database_url: str):
         "TMDB_API_KEY": tmdb_api_key or "required",
         "DEV_DYNAMO_ENDPOINT": "http://localhost:8000",
         "COOKIE_SECRET": hashlib.sha256(b"secret").hexdigest(),
+        "EMAIL_SENDER": "john.doe@gmail.com"
     }
 
     file_result = ""
