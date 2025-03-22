@@ -24,14 +24,6 @@
             {
                 "AttributeName": "email",
                 "AttributeType": "S"
-            },
-            {
-                "AttributeName": "otp",
-                "AttributeType": "S"
-            },
-            {
-                "AttributeName": "expiration",
-                "AttributeType": "N"
             }
         ],
         "KeySchema": [

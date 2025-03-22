@@ -4,16 +4,24 @@ import { EnvConfigService } from './env-config.service';
 
 @Injectable()
 export class EmailService {
-    private readonly sesClient: SESClient;
+    private readonly client: SESClient;
 
     constructor(private envConfigService: EnvConfigService) {
-        this.sesClient = new SESClient({
-            region: envConfigService.AWS_REGION,
-            credentials: {
-                accessKeyId: envConfigService.AWS_ACCESS_KEY_ID,
-                secretAccessKey: envConfigService.AWS_SECRET_ACCESS_KEY,
-            }
-        });
+        if (envConfigService.isProdEnv()) {
+            const options = {
+                region: envConfigService.AWS_REGION,
+                credentials: {
+                    accessKeyId: envConfigService.AWS_ACCESS_KEY_ID,
+                    secretAccessKey: envConfigService.AWS_SECRET_ACCESS_KEY
+                },
+            };
+            this.client = new SESClient(options);
+        } else {
+            const options = {
+                endpoint: envConfigService.LOCAL_AWS_ENDPOINT,
+            };
+            this.client = new SESClient(options);
+        }
     }
 
     sendEmail(to: string, subject: string, html: string, text: string): Promise<SendEmailCommandOutput> {
@@ -36,6 +44,6 @@ export class EmailService {
                 },
             },
         };
-        return this.sesClient.send(new SendEmailCommand(params));
+        return this.client.send(new SendEmailCommand(params));
     }
 }

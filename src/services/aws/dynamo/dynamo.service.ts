@@ -21,19 +21,18 @@ export class DynamoService {
     private readonly client: DynamoDBClient;
 
     constructor(private envConfigService: EnvConfigService) {
-        if (envConfigService.isDevEnv()) {
-            const options = {
-                region: envConfigService.AWS_REGION,
-                endpoint: envConfigService.DEV_DYNAMO_ENDPOINT,
-            };
-            this.client = new DynamoDBClient(options);
-        } else {
+        if (envConfigService.isProdEnv()) {
             const options = {
                 region: envConfigService.AWS_REGION,
                 credentials: {
                     accessKeyId: envConfigService.AWS_ACCESS_KEY_ID,
                     secretAccessKey: envConfigService.AWS_SECRET_ACCESS_KEY
-                }
+                },
+            };
+            this.client = new DynamoDBClient(options);
+        } else {
+            const options = {
+                endpoint: envConfigService.LOCAL_AWS_ENDPOINT,
             };
             this.client = new DynamoDBClient(options);
         }
@@ -58,7 +57,7 @@ export class DynamoService {
      */
     async findOneOrThrow(TableName: DYNAMO_TABLES, Key: ItemKey, errorMessage: string) {
         const register = await this.findOne(TableName, Key);
-        if (!register) {
+        if (!register.Item) {
             throw new NotFoundException(errorMessage);
         }
         return register;

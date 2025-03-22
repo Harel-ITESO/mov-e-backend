@@ -98,23 +98,28 @@ export class AuthenticationController {
             registerEmailBodyHtml(otp),
             registerEmailBodyText(otp)
         );
+        return { message: 'One time password created' };
     }
 
     // v1/api/authentication/validate-email
     @Put('validate-email')
     public async validateEmail(@Body() { email, otp }: ValidateEmailDto) {
         const user = await this.authenticationService.getUser(email) as User;
+        if (user.emailValidated) {
+            throw new BadRequestException('This email has already been validated');
+        }
         const otpQuery: OneTimePassword = {
             email: { S: email }
         };
-        const output = await this.dynamoService.findOneOrThrow(DYNAMO_TABLES.OTP, otpQuery, 'Email not found');
-        await this.dynamoService.deleteOne(DYNAMO_TABLES.OTP, otpQuery);
+        const output = await this.dynamoService.findOneOrThrow(DYNAMO_TABLES.OTP, otpQuery, 'One time password not found');
         const otpRegister = output.Item as OneTimePassword;
         const currentTime = Date.now();
         const expirationTime = parseInt(otpRegister.expiration!.N);
         if (otpRegister.otp?.S != otp || currentTime > expirationTime) {
-            throw new UnauthorizedException('Invalid one time password');
+            throw new UnauthorizedException('Invalid or expired one time password');
         }
+        await this.dynamoService.deleteOne(DYNAMO_TABLES.OTP, otpQuery);
         await this.authenticationService.updateValidEmail(user);
+        return { message: 'Email validated' };
     }
 }

@@ -16,7 +16,7 @@ export class EnvConfigService {
     public readonly EMAIL_SENDER: string;
     public readonly TMDB_API_KEY: string;
     public readonly COOKIE_SECRET: string;
-    public readonly DEV_DYNAMO_ENDPOINT: string;
+    public readonly LOCAL_AWS_ENDPOINT: string;
 
     constructor(private readonly configService: ConfigService) {
         this.NODE_ENV = this.configService.getOrThrow<ENV>('NODE_ENV');
@@ -29,8 +29,7 @@ export class EnvConfigService {
             this.AWS_ACCESS_KEY_ID = this.configService.getOrThrow<string>('AWS_ACCESS_KEY_ID');
             this.AWS_SECRET_ACCESS_KEY = this.configService.getOrThrow<string>('AWS_SECRET_ACCESS_KEY');
         } else {
-            this.AWS_REGION = 'local';
-            this.DEV_DYNAMO_ENDPOINT = this.configService.getOrThrow<string>('DEV_DYNAMO_ENDPOINT');
+            this.LOCAL_AWS_ENDPOINT = this.configService.getOrThrow<string>('LOCAL_AWS_ENDPOINT');
         }
     }
 
