@@ -53,6 +53,9 @@ export class AuthenticationController {
         @Res({ passthrough: true }) response: Response,
     ) {
         const user = request.user as UserWithoutPassword;
+        if (!user.emailValidated) {
+            throw new UnauthorizedException('The email has not been validated');
+        }
         const session = await this.authenticationService.generateSession(
             user.id,
         );
