@@ -72,6 +72,10 @@ export class AuthenticationService {
         await this.sessionsService.deleteSession(sessionId);
     }
 
+    /**
+     * Updates user to have email validated
+     * @param user The user data
+     */
     public async updateValidEmail(user: User) {
         const dataToUpdate = {
             emailValidated: true

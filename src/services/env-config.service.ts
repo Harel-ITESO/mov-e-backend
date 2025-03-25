@@ -33,15 +33,27 @@ export class EnvConfigService {
         }
     }
 
+    /**
+     * Check is app is running in development environment
+     * @returns True if is development environment, otherwise false
+     */
     isDevEnv() {
         return this.NODE_ENV == ENV.DEVELOPMENT;
     }
 
+    /**
+     * Check is app is running in production environment
+     * @returns True if is production environment, otherwise false
+     */
     isProdEnv() {
         return this.NODE_ENV == ENV.PRODUCTION;
     }
 
     // the env variable must have the same name as above
+    /**
+     * Get the cookie secret retrieved from environment variables
+     * @returns The cookie secret
+     */
     static getCookieSecret() {
         return process.env.COOKIE_SECRET;
     }

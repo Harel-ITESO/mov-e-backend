@@ -51,8 +51,9 @@ export class DynamoService {
 
     /**
      * Retrieves an item from a table, if not found, throws a NotFoundException
-     * @param TableName
-     * @param Item
+     * @param TableName The table name
+     * @param Key The key of the item
+     * @param errorMessage The message to send in NotFoundException
      * @returns Response from the operation
      */
     async findOneOrThrow(TableName: DYNAMO_TABLES, Key: ItemKey, errorMessage: string) {
@@ -65,7 +66,7 @@ export class DynamoService {
 
     /**
      * Lists all items from a table
-     * @param tableName
+     * @param TableName The table name
      * @returns Response from the operation
      */
     findAll(TableName: DYNAMO_TABLES) {
@@ -75,8 +76,8 @@ export class DynamoService {
 
     /**
      * Puts an item on a table
-     * @param TableName
-     * @param Item
+     * @param TableName The table name
+     * @param Item The item to put on database
      * @returns Response from the operation
      */
     putOne(TableName: DYNAMO_TABLES, Item: ItemKey) {

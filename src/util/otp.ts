@@ -5,6 +5,12 @@ export enum OTP_TYPES {
     ALPHANUMERIC = 'alphanumeric'
 }
 
+/**
+ * Creates a random one time password
+ * @param length The OTP length
+ * @param type The OTP type (available options in OTP_TYPES enum)
+ * @returns The OTP
+ */
 export function createOneTimePassword(length: number, type: OTP_TYPES) {
     const otp = crypto({ length, type });
     return otp;

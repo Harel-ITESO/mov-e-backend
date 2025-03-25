@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SESClient, SendEmailCommand, SendEmailCommandInput, SendEmailCommandOutput } from '@aws-sdk/client-ses';
+import { SESClient, SendEmailCommand, SendEmailCommandInput } from '@aws-sdk/client-ses';
 import { EnvConfigService } from './env-config.service';
 
 @Injectable()
@@ -24,7 +24,15 @@ export class EmailService {
         }
     }
 
-    sendEmail(to: string, subject: string, html: string, text: string): Promise<SendEmailCommandOutput> {
+    /**
+     * Sends an email to the given email address
+     * @param to The email receiver
+     * @param subject The email subject
+     * @param html The HTML version of email body
+     * @param text The text version of email body
+     * @returns The promise of sending the email
+     */
+    sendEmail(to: string, subject: string, html: string, text: string) {
         const params: SendEmailCommandInput = {
             Source: this.envConfigService.EMAIL_SENDER,
             Destination: {
