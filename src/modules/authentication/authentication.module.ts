@@ -6,6 +6,9 @@ import { PrismaService } from 'src/services/prisma/prisma.service';
 import { LocalStrategy } from './strategies/local.strategy';
 import { SessionModule } from '../session/session.module';
 import { PassportModule } from '@nestjs/passport';
+import { EmailService } from 'src/services/email.service';
+import { EnvConfigService } from 'src/services/env-config.service';
+import { DynamoService } from 'src/services/aws/dynamo/dynamo.service';
 
 @Module({
     imports: [SessionModule, PassportModule.register({ session: true })],
@@ -15,6 +18,9 @@ import { PassportModule } from '@nestjs/passport';
         UserService,
         PrismaService,
         LocalStrategy,
+        DynamoService,
+        EmailService,
+        EnvConfigService
     ],
 })
 export class AuthenticationModule {}

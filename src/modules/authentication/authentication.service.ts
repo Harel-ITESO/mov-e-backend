@@ -3,8 +3,8 @@ import { UserService } from '../user/user.service';
 import { CreateUserDto } from '../user/model/dto/create-user.dto';
 import { bcryptCompareHash, bcryptHashString } from 'src/util/hash';
 import { isEmail } from 'class-validator';
-import { User } from '@prisma/client';
 import { SessionService } from '../session/session.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthenticationService {
@@ -18,7 +18,7 @@ export class AuthenticationService {
      * @param emailOrUsername The email or the username of the user
      * @returns The found user
      */
-    private getUser(emailOrUsername: string) {
+    public getUser(emailOrUsername: string) {
         if (isEmail(emailOrUsername)) {
             return this.userService.findUserWhere({ email: emailOrUsername });
         }
@@ -70,5 +70,17 @@ export class AuthenticationService {
      */
     public async logoutFromSession(sessionId: string) {
         await this.sessionsService.deleteSession(sessionId);
+    }
+
+    /**
+     * Updates user to have email validated
+     * @param user The user data
+     */
+    public async updateValidEmail(user: User) {
+        const dataToUpdate = {
+            emailValidated: true
+        } as User;
+        const userUpdated = await this.userService.updateUser(user.id, dataToUpdate);
+        return userUpdated;
     }
 }

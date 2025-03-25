@@ -6,6 +6,7 @@ import { AuthenticationModule } from './modules/authentication/authentication.mo
 import { MoviesModule } from './modules/movies/movies.module';
 import { DynamoService } from './services/aws/dynamo/dynamo.service';
 import { SessionModule } from './modules/session/session.module';
+import { EnvConfigService } from './services/env-config.service';
 
 @Module({
     imports: [
@@ -16,6 +17,6 @@ import { SessionModule } from './modules/session/session.module';
         SessionModule,
     ],
     controllers: [],
-    providers: [PrismaService, DynamoService],
+    providers: [PrismaService, DynamoService, EnvConfigService],
 })
 export class AppModule {}

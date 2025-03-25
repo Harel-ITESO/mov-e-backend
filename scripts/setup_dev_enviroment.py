@@ -7,6 +7,7 @@ import subprocess
 import hashlib
 import json
 import pathlib
+import time
 
 
 def create_postgres_instance(db_name: str, db_user: str, db_password: str):
@@ -21,12 +22,11 @@ def create_postgres_instance(db_name: str, db_user: str, db_password: str):
         raise RuntimeError(docker_result.stderr)
 
 
-def create_dynamo_db_instance():
+def create_aws_services(awsPort: str, awsUrl: str, serverEmail: str):
     create_docker_instance = (
-        "docker run --name mov-e-dynamodb -p 8000:8000 -d amazon/dynamodb-local "
-        "-jar DynamoDBLocal.jar -inMemory -sharedDb"
+        f"docker run -d -e SERVICES=dynamodb,ses -p {awsPort}:{awsPort} localstack/localstack"
     )
-    print("Setting up DynamoDB, please wait, this may take a while...")
+    print("Setting up AWS services, please wait, this may take a while...")
 
     docker_result = subprocess.run(
         create_docker_instance, capture_output=True, text=True, shell=True
@@ -34,33 +34,46 @@ def create_dynamo_db_instance():
     print(docker_result.stderr)
     if docker_result.returncode != 0:
         raise RuntimeError(docker_result.stderr)
-
+    
+    time.sleep(10)
     # Crear las tablas
     with open(pathlib.Path('./scripts/data/dynamo_tables.json').resolve(), "r") as file:
         data = json.load(file)
         for create_data in data:
             json_str = json.dumps(create_data)
-            create_command = (
-                f"aws dynamodb create-table --cli-input-json '{json_str}' "
-                f"--endpoint-url http://localhost:8000"
-            )
+            create_command = [
+                "aws", "dynamodb", "create-table", "--cli-input-json",
+                json_str, "--endpoint-url", awsUrl
+            ]
             create_result = subprocess.run(
                 create_command, capture_output=True, text=True, shell=True
             )
             print(create_result.stderr)
             if create_result.returncode != 0:
                 raise RuntimeError(create_result.stderr)
+            
+    create_command = [
+        "aws", "ses", "verify-email-identity", "--email-address",
+        f"\"{serverEmail}\"", "--endpoint-url", awsUrl
+    ]
+    create_result = subprocess.run(
+        create_command, capture_output=True, text=True, shell=True
+    )
+    print(create_result.stderr)
+    if create_result.returncode != 0:
+        raise RuntimeError(create_result.stderr)
 
 
 
-def create_enviroment_variables(database_url: str):
+def create_enviroment_variables(database_url: str, awsUrl: str, serverEmail: str):
     tmdb_api_key = input("Enter your TMDB API Key (leave blank if you'll do it after): ")
     envs = {
         "DATABASE_URL": database_url,
         "NODE_ENV": "development",
         "TMDB_API_KEY": tmdb_api_key or "required",
-        "DEV_DYNAMO_ENDPOINT": "http://localhost:8000",
+        "LOCAL_AWS_ENDPOINT": awsUrl,
         "COOKIE_SECRET": hashlib.sha256(b"secret").hexdigest(),
+        "EMAIL_SENDER": serverEmail
     }
 
     file_result = ""
@@ -84,6 +97,7 @@ def link_orm_to_database():
 
 
 def main():
+    input("Make sure you have [default] mock profile in aws/credentials file. Enter to continue... ")
     # SETUP DATABASE
     print("DATABASE SETUP:")
     db_name = input("Enter Database Name: ")
@@ -100,13 +114,15 @@ def main():
         )
         print("Database is running on http://localhost:5432")
 
-
-        # create dynamodb instance with tables
-        create_dynamo_db_instance()
-        print("DynamoDB is running on http://localhost:8000")
+        awsPort = "4566"
+        awsUrl = f"http://localhost:{awsPort}"
+        serverEmail = "noreply@move.com"
+        # create localstack instance
+        create_aws_services(awsPort, awsUrl, serverEmail)
+        print(f"AWS services are running on {awsUrl}")
 
         # Run enviroment variables setup
-        create_enviroment_variables(database_url=db_env_variable)
+        create_enviroment_variables(db_env_variable, awsUrl, serverEmail)
         print(".env file updated... (Please check all 'required' values and set them with your own)")
 
         # Link orm to database

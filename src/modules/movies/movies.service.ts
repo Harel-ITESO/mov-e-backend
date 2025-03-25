@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { ConfigService } from '@nestjs/config';
+import { EnvConfigService } from 'src/services/env-config.service';
 
 type TmdbMovie = {
     id: number;
@@ -17,9 +17,9 @@ export class MoviesService {
 
     constructor(
         private readonly httpService: HttpService,
-        private readonly configService: ConfigService,
+        private readonly envConfigService: EnvConfigService,
     ) {
-        this.API_KEY = this.configService.get('TMDB_API_KEY') || '';
+        this.API_KEY = this.envConfigService.TMDB_API_KEY;
     }
 
     /**
