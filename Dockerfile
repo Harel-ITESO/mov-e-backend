@@ -1,4 +1,3 @@
-
 # Build stage to handle the dist files
 FROM node:lts-alpine AS build
 
@@ -13,6 +12,20 @@ COPY . .
 RUN npx prisma generate
 
 RUN npm run build
+
+
+# Development stage, made for development only
+FROM node:lts-alpine AS development
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npx prisma generate
 
 # Production stage, ready for deployment
 FROM node:lts-alpine

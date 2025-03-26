@@ -1,0 +1,56 @@
+# The goal of this compose file is to help in the managing and setup of a local development enviroment
+# The docker compose file is not expected to be used in production, AWS ECS will be used as an orchestrator instead
+
+services:
+    # Database service
+    db:
+        image: postgres
+        restart: always
+        environment:
+            - POSTGRES_PASSWORD=${DB_PWD}
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_DB=${DB_DATABASE}
+        container_name: mov-e-postgres-database
+        ports:
+            - '5432:5432'
+    # AWS Services on local enviroment
+    localstack:
+        image: localstack/localstack
+        container_name: mov-e-aws-services
+        ports:
+            - '4566:4566'
+        environment:
+            - SERVICES=s3,ses,dynamodb # add your AWS service here if you need it
+        depends_on:
+            - db
+
+    # Main application
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: development
+        container_name: mov-e-api
+        environment:
+            - DATABASE_URL=postgres://${DB_USER}:${DB_PWD}@mov-e-postgres-database:5432/${DB_DATABASE}
+            - NODE_ENV=development
+            - TMDB_API_KEY=${TMDB_API_KEY}
+            - LOCAL_AWS_ENDPOINT=${LOCAL_AWS_ENDPOINT}
+            - COOKIE_SECRET=${COOKIE_SECRET}
+            - EMAIL_SENDER=${EMAIL_SENDER}
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+        ports:
+            - '8080:8080' # Expose the application port
+        command: npm run start:dev # Assuming you have a start:dev script for watch mode
+        develop:
+            watch:
+                - action: sync
+                  path: .
+                  target: /usr/src/app
+                  ignore:
+                      - node_modules
+
+        depends_on:
+            - localstack
