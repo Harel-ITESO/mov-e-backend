@@ -21,6 +21,9 @@ services:
             - '4566:4566'
         environment:
             - SERVICES=s3,ses,dynamodb # add your AWS service here if you need it
+            - DEFAULT_REGION=us-east-1
+            - AWS_DEFAULT_REGION=us-east-1
+            - AWS_REGION=us-east-1
         depends_on:
             - db
 
@@ -41,16 +44,13 @@ services:
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+            - AWS_REGION=${AWS_DEFAULT_REGION}
         ports:
             - '8080:8080' # Expose the application port
-        command: npm run start:dev # Assuming you have a start:dev script for watch mode
-        develop:
-            watch:
-                - action: sync
-                  path: .
-                  target: /usr/src/app
-                  ignore:
-                      - node_modules
+        command: npm run start:dev # Fixed command to use 'run'
+        volumes:
+            - ./:/usr/src/app
+            - /usr/src/app/node_modules
 
         depends_on:
             - localstack

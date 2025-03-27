@@ -8,72 +8,145 @@ import hashlib
 import json
 import pathlib
 import time
+import configparser
+import platform
 
 
-def create_postgres_instance(db_name: str, db_user: str, db_password: str):
-    command = f"docker run --name mov-e-database -e POSTGRES_PASSWORD={db_password} -e POSTGRES_USER={db_user} -e POSTGRES_DB={db_name} -p 5432:5432 -d postgres"
-    print("Setting up Database, please wait, this may take a while...")
-    docker_result = subprocess.run(
-        command, capture_output=True, text=True, shell=True
+# Resolve the command given for unix based or windows os
+def resolve_command(command: list[str]):
+    if platform.system() == "Windows":
+        return command
+
+    string_cmd = " ".join(command)
+    return string_cmd
+
+
+# Resolves and runs a given command, handles error throwing
+def run_command(command: list[str]):
+    result = subprocess.run(
+        resolve_command(command), shell=True, text=True, capture_output=True
     )
-    print(docker_result.stderr)
-    # Changed: check exit code, not stderr, to determine errors.
-    if docker_result.returncode != 0:
-        raise RuntimeError(docker_result.stderr)
+    print(result.stderr)
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr)
 
 
-def create_aws_services(awsPort: str, awsUrl: str, serverEmail: str):
-    create_docker_instance = (
-        f"docker run -d -e SERVICES=dynamodb,ses -p {awsPort}:{awsPort} localstack/localstack"
-    )
-    print("Setting up AWS services, please wait, this may take a while...")
+# Retrieve aws credentials from ~/.aws/credentials
+def get_aws_credentials():
+    config = configparser.RawConfigParser()
+    config.read(pathlib.Path("~/.aws/credentials").expanduser())
+    access_key_id = config.get("default", "aws_access_key_id")
+    secret_access_key = config.get("default", "aws_secret_access_key")
+    if not access_key_id or not access_key_id:
+        raise RuntimeError(
+            "No AWS credentials file found, please create one for local development"
+        )
+    return {"access_key_id": access_key_id, "secret_access_key": secret_access_key}
 
-    docker_result = subprocess.run(
-        create_docker_instance, capture_output=True, text=True, shell=True
-    )
-    print(docker_result.stderr)
-    if docker_result.returncode != 0:
-        raise RuntimeError(docker_result.stderr)
-    
-    time.sleep(10)
-    # Crear las tablas
-    with open(pathlib.Path('./scripts/data/dynamo_tables.json').resolve(), "r") as file:
+
+# Create all dynamo tables based on the json file provided as schema
+def create_dynamo_tables():
+    with open(pathlib.Path("./scripts/data/dynamo_tables.json").resolve(), "r") as file:
         data = json.load(file)
         for create_data in data:
             json_str = json.dumps(create_data)
             create_command = [
-                "aws", "dynamodb", "create-table", "--cli-input-json",
-                json_str, "--endpoint-url", awsUrl
+                "aws",
+                "dynamodb",
+                "create-table",
+                "--cli-input-json",
+                f"'{json_str}'",
+                "--endpoint-url",
+                "http://localhost:4566",
             ]
-            create_result = subprocess.run(
-                create_command, capture_output=True, text=True, shell=True
-            )
-            print(create_result.stderr)
-            if create_result.returncode != 0:
-                raise RuntimeError(create_result.stderr)
-            
+            run_command(create_command)
+
+
+# Sets up a correct SES connection with aws
+def setup_ses_connection():
     create_command = [
-        "aws", "ses", "verify-email-identity", "--email-address",
-        f"\"{serverEmail}\"", "--endpoint-url", awsUrl
+        "aws",
+        "ses",
+        "verify-email-identity",
+        "--email-address",
+        "'noreply@move.com'",
+        "--endpoint-url",
+        "http://localhost:4566",
     ]
-    create_result = subprocess.run(
-        create_command, capture_output=True, text=True, shell=True
+    run_command(create_command)
+
+
+# Syncs Prisma schema with postgresql database
+def sync_prisma_schema():
+    command = ["docker", "exec", "-it", "mov-e-api", "npx", "prisma", "db", "push"]
+    run_command(command)
+
+
+# Creates app resources on the given app services
+# AWS SES
+# DynamoDB Tables
+# PostgreSQL Prisma Schema Sync
+def create_app_resources():
+    print("\nSetting up PostgreSQL Schema sync")
+    sync_prisma_schema()
+
+    print("\nCreating DynamoDB Tables...")
+    create_dynamo_tables()
+
+    print("\nSetting up SES configuration...")
+    setup_ses_connection()
+
+
+# Compose the entire docker-compose file
+def docker_compose():
+    docker_compose_down = ["docker", "compose", "down"]  # Remove instances if any
+    docker_compose_build = [
+        "docker",
+        "compose",
+        "build",
+        "--no-cache",
+    ]  # Build instances with no cache to avoid discrepancies
+
+    docker_compose_up = [
+        "docker",
+        "compose",
+        "up",
+        "-d",
+    ]  # Run instances in detached mode
+
+    docker_command = [
+        *docker_compose_down,
+        "&&",
+        *docker_compose_build,
+        "&&",
+        *docker_compose_up,
+    ]
+
+    run_command(docker_command)
+
+
+# Creates enviroment variables
+def create_enviroment_variables():
+    tmdb_api_key = input(
+        "Enter your TMDB API Key (leave blank if you'll do it after): "
     )
-    print(create_result.stderr)
-    if create_result.returncode != 0:
-        raise RuntimeError(create_result.stderr)
+    db_name = input("Enter Database Name: ")
+    db_user = input("Enter Database Username: ")
+    db_password = input("Enter Database Password: ")
 
+    aws_credentials = get_aws_credentials()
 
-
-def create_enviroment_variables(database_url: str, awsUrl: str, serverEmail: str):
-    tmdb_api_key = input("Enter your TMDB API Key (leave blank if you'll do it after): ")
     envs = {
-        "DATABASE_URL": database_url,
-        "NODE_ENV": "development",
+        "DB_PWD": db_password,
+        "DB_USER": db_user,
+        "DB_DATABASE": db_name,
         "TMDB_API_KEY": tmdb_api_key or "required",
-        "LOCAL_AWS_ENDPOINT": awsUrl,
+        "LOCAL_AWS_ENDPOINT": "http://localstack:4566",  # THIS IS DIFFERENT THAN localhost -- Because it's made for docker compose
         "COOKIE_SECRET": hashlib.sha256(b"secret").hexdigest(),
-        "EMAIL_SENDER": serverEmail
+        "EMAIL_SENDER": "noreply@move.com",
+        "AWS_ACCESS_KEY_ID": aws_credentials.get("access_key_id"),
+        "AWS_SECRET_ACCESS_KEY": aws_credentials.get("secret_access_key"),
+        "AWS_DEFAULT_REGION": "us-east-1",
     }
 
     file_result = ""
@@ -84,50 +157,33 @@ def create_enviroment_variables(database_url: str, awsUrl: str, serverEmail: str
         env_file.write(file_result)
 
 
-def link_orm_to_database():
-    command = "npx prisma generate && npx prisma db push"
-    npx_result = subprocess.run(
-        command,
-        shell=True,
-        capture_output=True,
-        text=True,
-    )
-    if npx_result.stderr:
-        raise RuntimeError(npx_result.stderr)
-
-
+# Script entry point
 def main():
-    input("Make sure you have [default] mock profile in aws/credentials file. Enter to continue... ")
-    # SETUP DATABASE
-    print("DATABASE SETUP:")
-    db_name = input("Enter Database Name: ")
-    db_user = input("Enter Database Username: ")
-    db_password = input("Enter Database Password: ")
-
-    # CREATE ENVIROMENT VARIABLES
-    db_env_variable = f"postgres://{db_user}:{db_password}@localhost:5432/{db_name}"
+    input(
+        "Make sure you have [default] mock profile in aws/credentials file. Enter to continue... (Run 'aws configure' with aws cli) "
+    )
 
     try:
-        # Run database creation
-        create_postgres_instance(
-            db_name=db_name, db_user=db_user, db_password=db_password
-        )
-        print("Database is running on http://localhost:5432")
-
-        awsPort = "4566"
-        awsUrl = f"http://localhost:{awsPort}"
-        serverEmail = "noreply@move.com"
-        # create localstack instance
-        create_aws_services(awsPort, awsUrl, serverEmail)
-        print(f"AWS services are running on {awsUrl}")
 
         # Run enviroment variables setup
-        create_enviroment_variables(db_env_variable, awsUrl, serverEmail)
-        print(".env file updated... (Please check all 'required' values and set them with your own)")
+        print("Enviroment variables setup...\n\n")
+        create_enviroment_variables()
+        print(
+            ".env file updated... (Please check all 'required' values and set them with your own)\n"
+        )
 
-        # Link orm to database
-        link_orm_to_database()
-        print("ORM linked to database...")
+        # Run compose
+        print("Running docker compose, this may take a while...\n")
+        docker_compose()
+
+        # Setup resources
+        print("Setting up all dev resources...")
+        create_app_resources()
+
+        print(
+            "\nFinished setting up, your application is running on docker\n"
+            "IMPORTANT* A volume is mounted, you are able to do local modifications to the code without restarting the container, if you require to install an npm package, restart the api container"
+        )
 
     except RuntimeError as e:
         print(e)
