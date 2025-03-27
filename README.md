@@ -28,31 +28,24 @@ Ensure you install all the required dependencies in your local repository
 npm install
 ```
 
-### Run the project
-
-To run the NestJS project, you must use the following commands based on your requirments.
-
-```bash
-# For local development
-npm run start:dev
-
-#or
-
-# For production development (Ensure you run the build command first)
-npm run start:prod
-```
-
 ### Scripts
 
-There are two scripts to help you get started with the project
+There are two scripts that will help you with your development
 
-#### 1. Set up a local development enviroment
+#### 1. Set up a local development enviroment and run the project
 
-This script setups a local enviroment for you to get started with developing with the required enviroment variables and actions. This script runs the following
+This script named as `setup_dev_enviroment.py`, will do the following:
 
-1. Setups a `docker` PostgreSQL database instance
-2. Creates enviroment variables file `.env`
+1. Asks the user for some **Enviroment Variables** and set up the `.env` file.
+2. Runs the `docker-compose.yaml` file which sets up:
+
+    - PostgreSQL Database.
+    - Localstack to run AWS services locally.
+    - Backend application on **development** mode.
+
 3. Runs `npx prisma generate && npx prisma db push` to link your ORM to the current PostgreSQL database.
+
+> NOTE: The backend application is run with a volume to mantain hot reload. That means, you can start editing code and get instant reload on your container
 
 To run it simply use
 
@@ -74,3 +67,19 @@ python3 scripts/create_server_module.py
 ```
 
 If you have any question, do not doubt to contact me
+
+### Run the project on your local machine (DEPRECATED)
+
+> I don't recommend running the proyect like this, use the python script for it to manage with the other required services in the docker enviroment
+
+To run the NestJS project, you must use the following commands based on your requirments.
+
+```bash
+# For local development
+npm run start:dev
+
+#or
+
+# For production development (Ensure you run the build command first)
+npm run start:prod
+```
