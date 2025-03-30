@@ -7,6 +7,7 @@ import { MoviesModule } from './modules/movies/movies.module';
 import { DynamoService } from './services/aws/dynamo/dynamo.service';
 import { SessionModule } from './modules/session/session.module';
 import { EnvConfigService } from './services/env-config.service';
+import { RatingModule } from './modules/rating/rating.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { EnvConfigService } from './services/env-config.service';
         AuthenticationModule,
         MoviesModule,
         SessionModule,
+        RatingModule,
     ],
     controllers: [],
     providers: [PrismaService, DynamoService, EnvConfigService],

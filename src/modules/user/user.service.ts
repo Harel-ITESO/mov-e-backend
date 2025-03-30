@@ -86,4 +86,85 @@ export class UserService {
         });
         return userUpdated;
     }
+
+    /**
+     * Filter user data before sending to client
+     * @param user The user data
+     * @returns New object without password, emailValidated
+     */
+    public filterUserData(user: User) {
+        const {
+            avatarImagePath,
+            bio,
+            email,
+            familyName,
+            givenName,
+            id,
+            location,
+            username,
+            website,
+        } = user;
+        return {
+            avatarImagePath,
+            bio,
+            email,
+            familyName,
+            givenName,
+            id,
+            location,
+            username,
+            website,
+        } as User;
+    }
+
+    /**
+     * Retrieves all the ratings a user has done
+     * @param userId The user id
+     * @returns The HttpResponse
+     */
+    async getRatings(userId: number) {
+        const ratings = await this.prismaService.rating.findMany({
+            where: { userId, },
+            include: { toMovie: true, },
+        });
+        let ratingSum = 0;
+        const ratingsFiltered = await Promise.all(
+            ratings.map(async rating => {
+                const likes = await this.prismaService.ratingLike.count({
+                    where: { ratingId: rating.id, },
+                });
+                const myLike = await this.prismaService.ratingLike.findUnique({
+                    where: {
+                        userId_ratingId: {
+                            ratingId: rating.id,
+                            userId,
+                        },
+                    },
+                });
+                const hasMyLike = !!myLike;
+                ratingSum += rating.rating.toNumber();
+                return {
+                    rating: {
+                        id: rating.id,
+                        rating: rating.rating.toNumber(),
+                        commentary: rating.commentary,
+                        likes,
+                        hasMyLike,
+                    },
+                    movie: {
+                        id: rating.toMovie.tmdbId,
+                        title: rating.toMovie.title,
+                        genres: rating.toMovie.genres,
+                        overview: rating.toMovie.overview,
+                        posterPath: rating.toMovie.posterPath,
+                        year: rating.toMovie.year,
+                        duration: rating.toMovie.duration,
+                    },
+                };
+            })
+        );
+        const averageRating = ratingsFiltered.length > 0
+            ? ratingSum / ratingsFiltered.length : null;
+        return { ratings: ratingsFiltered, averageRating };
+    }
 }
