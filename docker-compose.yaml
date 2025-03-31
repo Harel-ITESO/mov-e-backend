@@ -40,6 +40,7 @@ services:
             - TMDB_API_KEY=${TMDB_API_KEY}
             - LOCAL_AWS_ENDPOINT=${LOCAL_AWS_ENDPOINT}
             - COOKIE_SECRET=${COOKIE_SECRET}
+            - JWT_SECRET=${JWT_SECRET}
             - EMAIL_SENDER=${EMAIL_SENDER}
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}

@@ -65,7 +65,6 @@ export class UserService {
                 username,
                 email,
                 password,
-                emailValidated: false,
             },
         });
         return this.filterPasswordFromUser(userCreated);
@@ -81,8 +80,8 @@ export class UserService {
         const userUpdated = await this.prismaService.user.update({
             data: userData,
             where: {
-                id
-            }
+                id,
+            },
         });
         return userUpdated;
     }

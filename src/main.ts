@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './filters/prisma-client-exception/prisma-client-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
-import { EnvConfigService } from './services/env-config.service';
+import { EnvConfigService } from './services/env/env-config.service';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { EnvConfigService } from 'src/services/env-config.service';
+import { EnvConfigService } from 'src/services/env/env-config.service';
 
 type TmdbMovie = {
     id: number;
