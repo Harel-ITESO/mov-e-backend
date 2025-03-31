@@ -3,14 +3,18 @@ import { UserService } from '../user/user.service';
 import { CreateUserDto } from '../user/model/dto/create-user.dto';
 import { bcryptCompareHash, bcryptHashString } from 'src/util/hash';
 import { isEmail } from 'class-validator';
-import { SessionService } from '../session/session.service';
+import { SessionsService } from '../sessions/sessions.service';
 import { User } from '@prisma/client';
+import { EmailVerificationService } from '../email-verification/email-verification.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthenticationService {
     constructor(
         private readonly userService: UserService,
-        private readonly sessionsService: SessionService,
+        private readonly sessionsService: SessionsService,
+        private readonly emailVerificationService: EmailVerificationService,
+        private readonly jwtService: JwtService,
     ) {}
 
     /**
@@ -26,11 +30,47 @@ export class AuthenticationService {
     }
 
     /**
+     * Registers an email for pending verification
+     * @param email Email to register
+     * @returns Message indicating the success of the verification
+     * @throws Error if the user already exists
+     */
+    public async registerEmailForVerification(email: string) {
+        // I know this shit feels as an antipattern
+        // I'll fix later if i have the time
+        try {
+            await this.userService.findUserWhere({ email });
+        } catch {
+            return await this.emailVerificationService.registerProvidedEmailForVerification(
+                email,
+            );
+        }
+        throw Error('User already exists');
+    }
+
+    /**
+     * Verifies the pending verification of an email
+     * @param verificationId The id of the email for verification
+     * @returns JWT if found
+     */
+    public async verifyEmailRegistered(verificationId: string) {
+        const verification =
+            await this.emailVerificationService.findPendingVerification(
+                verificationId,
+            );
+        if (!verification)
+            throw new Error('Pending verification was not found');
+        const { email } = verification;
+        const jwt = await this.jwtService.signAsync({ email });
+        return { jwt };
+    }
+
+    /**
      * Register a new user, hashes the password
      * @param userData The data of the user to register
      * @returns The created user
      */
-    public async register(userData: CreateUserDto) {
+    public async signUp(userData: CreateUserDto) {
         const { password, ...rest } = userData;
         const hashedPassword = await bcryptHashString(password);
 
@@ -70,17 +110,5 @@ export class AuthenticationService {
      */
     public async logoutFromSession(sessionId: string) {
         await this.sessionsService.deleteSession(sessionId);
-    }
-
-    /**
-     * Updates user to have email validated
-     * @param user The user data
-     */
-    public async updateValidEmail(user: User) {
-        const dataToUpdate = {
-            emailValidated: true
-        } as User;
-        const userUpdated = await this.userService.updateUser(user.id, dataToUpdate);
-        return userUpdated;
     }
 }

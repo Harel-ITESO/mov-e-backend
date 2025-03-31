@@ -19,16 +19,16 @@
         }
     },
     {
-        "TableName": "one-time-password",
+        "TableName": "email-verifications",
         "AttributeDefinitions": [
             {
-                "AttributeName": "email",
+                "AttributeName": "verificationId",
                 "AttributeType": "S"
             }
         ],
         "KeySchema": [
             {
-                "AttributeName": "email",
+                "AttributeName": "verificationId",
                 "KeyType": "HASH"
             }
         ],

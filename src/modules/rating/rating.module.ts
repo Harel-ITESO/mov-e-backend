@@ -5,7 +5,7 @@ import { PrismaService } from 'src/services/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { MoviesService } from '../movies/movies.service';
 import { HttpModule } from '@nestjs/axios';
-import { EnvConfigService } from 'src/services/env-config.service';
+import { EnvConfigService } from 'src/services/env/env-config.service';
 
 @Module({
   imports: [HttpModule],

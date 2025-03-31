@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { EnvConfigService } from 'src/services/env-config.service';
+import { EnvConfigService } from 'src/services/env/env-config.service';
 import { TMDB_Movie } from 'src/types/tmdb-movie';
 import { Movie } from '@prisma/client';
 import { isValidId } from 'src/util/regex';
