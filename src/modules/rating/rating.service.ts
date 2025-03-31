@@ -1,147 +1,143 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { MoviesService } from '../movies/movies.service';
-import { isValidId } from 'src/util/regex';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 
 @Injectable()
 export class RatingService {
     constructor(
         private readonly prismaService: PrismaService,
-        private readonly movieService: MoviesService,
     ) {}
 
     /**
-     * Finds a rating by the id
-     * @param _ratingId The rating id
+     * Retrieves a rating by its id
+     * @param ratingId The rating id
      * @returns The rating if found, otherwise `null`
      */
-    findRating(_ratingId: string) {
-        if (!isValidId(_ratingId)) {
-            throw new BadRequestException('Rating ID must be a number');
-        }
-        const ratingId = parseInt(_ratingId);
+    public getRatingById(ratingId: number) {
         return this.prismaService.rating.findUnique({
-            where: { id: ratingId, }
+            where: {
+                id: ratingId,
+            },
         });
     }
 
     /**
-     * Finds a rating by the id, throws a `NotFoundException` if not found
+     * Retrives a rating by its id and the user id
+     * @param userId The user id
      * @param ratingId The rating id
-     * @returns The rating if found, otherwise throws an exception
+     * @returns The rating if found, otherwise `null`
      */
-    async findRatingOrThrow(ratingId: string) {
-        const rating = await this.findRating(ratingId);
-        if (!rating) {
-            throw new NotFoundException('Rating not found');
-        }
-        return rating;
+    public getRatingByIdAndUser(userId: number, ratingId: number) {
+        return this.prismaService.rating.findUnique({
+            where: {
+                id: ratingId,
+                userId,
+            },
+        });
     }
 
     /**
-     * Creates a rating linked to a movie and a user
+     * Retrieves a rating by the user id and movie id
      * @param userId The user id
-     * @param movieId The movie id (it will be validated)
-     * @param ratingValue The value to rate the movie (it will be validated)
-     * @param commentary The commentary linked to the rating
-     * @returns The HttpResponse
+     * @param movieId The movie id
+     * @returns The rating if found, otherwise `null`
      */
-    async createRating(userId: number, movieId: number, ratingValue: number, commentary: string) {
-        if (ratingValue % 5 != 0) {
-            throw new BadRequestException('Invalid rating');
-        }
-        const movie = await this.movieService.createMovieOrThrow(movieId);
-        const ratingFound = await this.prismaService.rating.findUnique({
+    public getRatingByUserAndMovie(userId: number, movieId: number) {
+        return this.prismaService.rating.findUnique({
             where: {
                 userId_movieId: {
                     userId,
-                    movieId: movie.id,
+                    movieId,
                 },
             },
         });
-        if (ratingFound) {
-            throw new BadRequestException('Rating already exists');
-        }
-        await this.prismaService.rating.create({
+    }
+
+    /**
+     * Creates a rating
+     * @param userId The user id
+     * @param movieId The movie id
+     * @param rating The rating value
+     * @param commentary The commentary
+     * @returns The rating created
+     */
+    public createRating(userId: number, movieId: number, rating: number, commentary: string | undefined) {
+        return this.prismaService.rating.create({
             data: {
-                rating: ratingValue / 10,
+                rating: rating / 10,
                 commentary: commentary,
-                movieId: movie.id,
-                userId: userId,
+                movieId,
+                userId,
             },
         });
-        return { message: 'Rating created' };
     }
 
     /**
-     * Deletes a rating linked to a movie and a user
-     * @param ratingId The rating id
-     * @returns The HttpResponse
-     */
-    async deleteRating(ratingId: string) {
-        const rating = await this.findRatingOrThrow(ratingId);
-        await this.prismaService.ratingLike.deleteMany({
-            where: {
-                ratingId: rating.id,
-            },
-        });
-        await this.prismaService.rating.delete({
-            where: { id: rating.id, },
-        });
-        return { message: 'Rating deleted' }
-    }
-
-    /**
-     * Creates a like linked to a rating and a user
+     * Deletes a rating
      * @param userId The user id
      * @param ratingId The rating id
-     * @returns The HttpResponse
+     * @returns The rating deleted
      */
-    async createLikeRating(userId: number, ratingId: string) {
-        const rating = await this.findRatingOrThrow(ratingId);
-        const params = {
-            ratingId: rating.id,
-            userId,
-        };
-        const like = await this.prismaService.ratingLike.findUnique({
+    public async deleteRating(userId: number, ratingId: number) {
+        return this.prismaService.ratingLike.deleteMany({
             where: {
-                userId_ratingId: params,
+                ratingId,
             },
+        }).then(() => {
+            return this.prismaService.rating.delete({
+                where: {
+                    id: ratingId,
+                    userId,
+                },
+            });
         });
-        if (like) {
-            return { message: 'The like already exists' };
-        }
-        await this.prismaService.ratingLike.create({
-            data: params,
-        });
-        return { message: 'Like created' };
     }
 
     /**
-     * Deletes a like linked to a rating and a user
+     * Retrives a rating like
      * @param userId The user id
      * @param ratingId The rating id
-     * @returns The HttpResponse
+     * @returns The rating like if found, otherwise `null`
      */
-    async deleteLikeRating(userId: number, ratingId: string) {
-        const rating = await this.findRatingOrThrow(ratingId);
-        const params = {
-            ratingId: rating.id,
-            userId,
-        };
-        const like = await this.prismaService.ratingLike.findUnique({
+    public getRatingLike(userId: number, ratingId: number) {
+        return this.prismaService.ratingLike.findUnique({
             where: {
-                userId_ratingId: params,
+                userId_ratingId: {
+                    userId,
+                    ratingId,
+                },
             },
         });
-        if (!like) {
-            return { message: 'The like didn\'t exist' };
-        }
-        await this.prismaService.ratingLike.delete({
-            where: {
-                userId_ratingId: params,
+    }
+
+    /**
+     * Creates a rating like
+     * @param userId The user id
+     * @param ratingId The rating id
+     * @returns The rating like created
+     */
+    public createRatingLike(userId: number, ratingId: number) {
+        return this.prismaService.ratingLike.create({
+            data: {
+                userId,
+                ratingId,
             },
         });
-        return { message: 'Like deleted' };
+    }
+
+    /**
+     * Deletes a rating like
+     * @param userId The user id
+     * @param ratingId The rating id
+     * @returns The rating like deleted
+     */
+    public deleteRatingLike(userId: number, ratingId: number) {
+        return this.prismaService.ratingLike.delete({
+            where: {
+                userId_ratingId: {
+                    userId,
+                    ratingId,
+                },
+            },
+        });
     }
 }

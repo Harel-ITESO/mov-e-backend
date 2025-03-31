@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, ParseIntPipe, Req, UseGuards } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { SessionAuthGuard } from '../authentication/guards/session-auth.guard';
 import { Request } from 'express';
@@ -18,11 +18,19 @@ export class MoviesController {
     // v1/api/movies/:movieId/ratings
     @Get(':movieId/ratings')
     @UseGuards(SessionAuthGuard)
-    public createRating(
+    public async createRating(
         @Req() request: Request,
-        @Param('movieId') movieId: string,
+        @Param('movieId', ParseIntPipe) movieId: number,
     ) {
         const user = request.user as User;
-        return this.moviesService.getRatings(user.id, movieId);
+        const movieFound = await this.moviesService.getMovie(movieId);
+        if (!movieFound) {
+            throw new NotFoundException('Movie not found');
+        }
+        const { isLocalMovie, movie, } = movieFound;
+        if (!isLocalMovie) {
+            return { ratings: [] };
+        }
+        return this.moviesService.getRatings(user.id, movie.id);
     }
 }

@@ -1,10 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { EnvConfigService } from 'src/services/env/env-config.service';
 import { TMDB_Movie } from 'src/types/tmdb-movie';
 import { Movie } from '@prisma/client';
-import { isValidId } from 'src/util/regex';
 import { UserService } from '../user/user.service';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 
@@ -126,11 +125,11 @@ export class MoviesService {
     /**
      * Looks for a movie in local database, if found, it's returned.
      * If not, looks for the movie in TMDB, if found, return it.
-     * If not, throw a `NotFoundException`.
+     * If not, returns `null`.
      * @param movieId The movie id
-     * @returns The movie or throws an exception
+     * @returns The movie if found, otherwise `null`
      */
-    async getMovieOrThrow(movieId: number): Promise<MovieFound> {
+    async getMovie(movieId: number): Promise<MovieFound | null> {
         const movie = await this.localGetMovie(movieId);
         if (movie) {
             return { isLocalMovie: true, movie, };
@@ -139,18 +138,22 @@ export class MoviesService {
         if (movieTMDB) {
             return { isLocalMovie: false, movie: movieTMDB, };
         }
-        throw new NotFoundException('Movie not found');
+        return null;
     }
     
     /**
      * Looks for a movie in local database, if found, it's returned.
      * If not, looks for the movie in TMDB, if found, create that register in local database and return it.
-     * If not, throw a `NotFoundException`.
+     * If not, returns `null`.
      * @param movieId The movie id
-     * @returns The movie or throws an exception
+     * @returns The movie if found, otherwise `null`
      */
-    async createMovieOrThrow(movieId: number): Promise<Movie> {
-        const { isLocalMovie, movie, } = await this.getMovieOrThrow(movieId);
+    async createMovie(movieId: number): Promise<Movie | null> {
+        const movieFound = await this.getMovie(movieId);
+        if (!movieFound) {
+            return null;
+        }
+        const { isLocalMovie, movie, } = movieFound;
         if (isLocalMovie) {
             return movie as Movie;
         }
@@ -161,20 +164,12 @@ export class MoviesService {
     /**
      * Retrieves all the ratings a movie has
      * @param userId The user id
-     * @param _movieId The movie id (it will be validated)
-     * @returns The HttpResponse
+     * @param movieId The movie id
+     * @returns The ratings found
      */
-    async getRatings(userId: number, _movieId: string) {
-        if (!isValidId(_movieId)) {
-            throw new BadRequestException('Movie ID must be a number');
-        }
-        const movieId = parseInt(_movieId);
-        const { isLocalMovie, movie, } = await this.getMovieOrThrow(movieId);
-        if (!isLocalMovie) {
-            return { ratings: [] };
-        }
+    async getRatings(userId: number, movieId: number) {
         const ratings = await this.prismaService.rating.findMany({
-            where: { movieId: movie.id, },
+            where: { movieId, },
             include: { fromUser: true, },
         });
         let ratingSum = 0;
@@ -192,7 +187,7 @@ export class MoviesService {
                     },
                 });
                 const hasMyLike = !!myLike;
-                const user = this.userService.filterUserData(rating.fromUser);
+                const user = this.userService.filterPasswordFromUser(rating.fromUser);
                 ratingSum += rating.rating.toNumber();
                 return {
                     rating: {
