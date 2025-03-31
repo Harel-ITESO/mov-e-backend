@@ -14,17 +14,16 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  username        String   @unique
-  email           String   @unique
+  id              Int     @id @default(autoincrement())
+  username        String  @unique
+  email           String  @unique
   password        String
-  givenName       String?  @map("given_name")
-  familyName      String?  @map("family_name")
+  givenName       String? @map("given_name")
+  familyName      String? @map("family_name")
   location        String?
   website         String?
   bio             String?
-  avatarImagePath String?  @map("avatar_image_path")
-  emailValidated  Boolean? @default(false) @map("email_validated")
+  avatarImagePath String? @map("avatar_image_path")
 
   rating     Rating[]
   ratingLike RatingLike[]
