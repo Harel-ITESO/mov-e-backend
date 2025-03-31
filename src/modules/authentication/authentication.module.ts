@@ -1,26 +1,35 @@
 import { Module } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { AuthenticationController } from './authentication.controller';
-import { UserService } from '../user/user.service';
-import { PrismaService } from 'src/services/prisma/prisma.service';
 import { LocalStrategy } from './strategies/local.strategy';
-import { SessionModule } from '../session/session.module';
+import { SessionsModule } from '../sessions/sessions.module';
 import { PassportModule } from '@nestjs/passport';
-import { EmailService } from 'src/services/email.service';
-import { EnvConfigService } from 'src/services/env-config.service';
-import { DynamoService } from 'src/services/aws/dynamo/dynamo.service';
+import { EnvConfigService } from 'src/services/env/env-config.service';
+import { JwtModule } from '@nestjs/jwt';
+import { UserModule } from '../user/user.module';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { EmailVerificationModule } from '../email-verification/email-verification.module';
 
 @Module({
-    imports: [SessionModule, PassportModule.register({ session: true })],
+    imports: [
+        SessionsModule,
+        PassportModule.register({ session: true }),
+        JwtModule.register({
+            global: true,
+            secret: process.env.JWT_SECRET,
+            signOptions: {
+                expiresIn: '10m', // lasts only 10 minutes
+            },
+        }),
+        UserModule,
+        EmailVerificationModule,
+    ],
     controllers: [AuthenticationController],
     providers: [
         AuthenticationService,
-        UserService,
-        PrismaService,
         LocalStrategy,
-        DynamoService,
-        EmailService,
-        EnvConfigService
+        JwtStrategy,
+        EnvConfigService,
     ],
 })
 export class AuthenticationModule {}
