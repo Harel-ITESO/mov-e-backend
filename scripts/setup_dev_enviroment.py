@@ -74,6 +74,19 @@ def setup_ses_connection():
         "http://localhost:4566",
     ]
     run_command(create_command)
+    
+# Creates an S3 Bucket for file storage
+def setup_s3_storage():
+    create_command = [
+        "aws",
+        "s3api",
+        "create-bucket",
+        "--bucket",
+        "file-storage",
+        "--endpoint-url",
+        "http://localhost:4566",
+    ]
+    run_command(create_command)
 
 
 # Syncs Prisma schema with postgresql database
@@ -95,6 +108,9 @@ def create_app_resources():
 
     print("\nSetting up SES configuration...")
     setup_ses_connection()
+
+    print("\nCreating S3 Bucket as 'file-storage'...")
+    setup_s3_storage()
 
 
 # Compose the entire docker-compose file
@@ -142,9 +158,10 @@ def create_enviroment_variables():
         "DB_DATABASE": db_name,
         "TMDB_API_KEY": tmdb_api_key or "required",
         "LOCAL_AWS_ENDPOINT": "http://localstack:4566",  # THIS IS DIFFERENT THAN localhost -- Because it's made for docker compose
-        "COOKIE_SECRET": hashlib.sha256(b"cookie-secret").hexdigest(),
-        "JWT_SECRET": hashlib.sha256(b"jwt-secret").hexdigest(),
+        "COOKIE_SECRET": hashlib.sha256(b"unsafe-cookie-secret").hexdigest(),
+        "JWT_SECRET": hashlib.sha256(b"unsafe-jwt-secret").hexdigest(),
         "EMAIL_SENDER": "noreply@move.com",
+        "BUCKET_NAME": "file-storage",
         "AWS_ACCESS_KEY_ID": aws_credentials.get("access_key_id"),
         "AWS_SECRET_ACCESS_KEY": aws_credentials.get("secret_access_key"),
         "AWS_DEFAULT_REGION": "us-east-1",

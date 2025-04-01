@@ -22,16 +22,24 @@ export class SessionsService {
 
     /**
      * Creates a new session based on user data
-     * @param userId
+     * @param userId The id of the user
+     * @param username The username to store
+     * @param email The email to store
      * @returns the session created
      */
-    public async createSession(userId: number) {
+    public async createSession(
+        userId: number,
+        username: string,
+        email: string,
+    ) {
         const sessionId = hashString(`${userId}-${Date.now()}`, 'sha256');
         const now = Date.now();
         const tenDays = now + 10 * 24 * 60 * 60 * 1000;
         const dynamoSessionData = {
             sessionId: { S: sessionId },
             userId: { N: userId.toString() },
+            username: { S: username },
+            email: { S: email },
             issuedAt: { N: now.toString() },
             expiresAt: { N: tenDays.toString() },
         };

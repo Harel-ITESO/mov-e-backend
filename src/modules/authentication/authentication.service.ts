@@ -98,10 +98,20 @@ export class AuthenticationService {
     /**
      * Generates a session for a user
      * @param userId The id of the user
+     * @param username The username of the user for quick access
+     * @param email The email of the user for quick access
      * @returns The generated session
      */
-    public async generateSession(userId: number) {
-        return await this.sessionsService.createSession(userId);
+    public async generateSession(
+        userId: number,
+        username: string,
+        email: string,
+    ) {
+        return await this.sessionsService.createSession(
+            userId,
+            username,
+            email,
+        );
     }
 
     /**

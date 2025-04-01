@@ -3,6 +3,7 @@ import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { CreateUserDto } from './model/dto/create-user.dto';
 import { UserWithoutPassword } from './model/types/user-without-password';
+import { UpdateUserDto } from './model/dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -71,16 +72,19 @@ export class UserService {
     }
 
     /**
-     * Updates the user data on database
-     * @param id The user id
-     * @param userData The user data to update
-     * @returns The user updated
+     * Updates data of a user
+     * @param userId The id of the user to update data for
+     * @param data The data to put
+     * @returns The user with updated data
      */
-    public async updateUser(id: number, userData: User): Promise<User> {
+    public async updateUserData(
+        userId: number,
+        data: UpdateUserDto,
+    ): Promise<User> {
         const userUpdated = await this.prismaService.user.update({
-            data: userData,
+            data,
             where: {
-                id,
+                id: userId,
             },
         });
         return userUpdated;

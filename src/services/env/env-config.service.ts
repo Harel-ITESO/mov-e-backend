@@ -18,6 +18,7 @@ export class EnvConfigService {
     public readonly TMDB_API_KEY: string;
     public readonly COOKIE_SECRET: string;
     public readonly LOCAL_AWS_ENDPOINT: string;
+    public readonly BUCKET_NAME: string;
     public readonly JWT_SECRET: string;
 
     constructor(private readonly configService: ConfigService) {
@@ -31,6 +32,7 @@ export class EnvConfigService {
         this.COOKIE_SECRET =
             this.configService.getOrThrow<string>('COOKIE_SECRET');
         this.JWT_SECRET = this.configService.getOrThrow<string>('JWT_SECRET');
+        this.BUCKET_NAME = this.configService.getOrThrow<string>('BUCKET_NAME');
         if (this.NODE_ENV == ENV.PRODUCTION) {
             this.AWS_REGION =
                 this.configService.getOrThrow<string>('AWS_REGION');

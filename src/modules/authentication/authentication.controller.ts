@@ -87,6 +87,8 @@ export class AuthenticationController {
         const user = request.user as UserWithoutPassword;
         const session = await this.authenticationService.generateSession(
             user.id,
+            user.username,
+            user.email,
         );
         const { sessionId, expiresAt } = session;
         response.cookie('sessionId', sessionId, {
