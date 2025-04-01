@@ -15,8 +15,11 @@ export class SessionAuthGuard implements CanActivate {
         const session = await this.sessionsService.findSession(sessionId);
         if (!session) return false;
 
-        // TODO: Add more meaningful data to avoid round trips to Postgres DB
-        request.user = { id: session.userId };
+        request.user = {
+            id: session.userId,
+            username: session.username,
+            email: session.email,
+        };
         return true;
     }
 }
