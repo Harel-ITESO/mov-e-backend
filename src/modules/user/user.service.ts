@@ -89,4 +89,25 @@ export class UserService {
         });
         return userUpdated;
     }
+
+    /**
+     * Endpoint for specifically updating the array value in FavoriteThreeMovies
+     * @param userId The id of the user
+     * @param array The array in the form of a record of <string, any>
+     * @returns The updated user
+     */
+    public async updateFavoriteMoviesArray(
+        userId: number,
+        array: Record<string, any>,
+    ) {
+        const userUpdated = await this.prismaService.user.update({
+            data: {
+                favoriteThreeMovies: array,
+            },
+            where: {
+                id: userId,
+            },
+        });
+        return userUpdated;
+    }
 }

@@ -3,7 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { EnvConfigService } from 'src/services/env/env-config.service';
 
-type TmdbMovie = {
+type TmdbApiResponse = {
     id: number;
     poster_path: string;
     original_title: string;
@@ -29,25 +29,25 @@ export class MoviesService {
      */
     async searchMoviesByTitle(title: string) {
         const response = await firstValueFrom(
-            this.httpService.get<{ results: TmdbMovie[] }>(
-                `${this.API_URL}/search/movie`,
-                {
-                    params: {
-                        api_key: this.API_KEY,
-                        query: title,
-                        language: 'es-ES',
-                    },
-                    headers: {
-                        Authorization: `Bearer ${this.API_KEY}`,
-                    },
+            this.httpService.get<{
+                results: TmdbApiResponse[];
+            }>(`${this.API_URL}/search/movie`, {
+                params: {
+                    api_key: this.API_KEY,
+                    query: title,
+                    language: 'es-ES',
                 },
-            ),
+                headers: {
+                    Authorization: `Bearer ${this.API_KEY}`,
+                },
+            }),
         );
 
         return response.data.results.map((movie) => {
             return {
                 id: movie.id,
-                posterPath: movie.poster_path,
+                posterPath:
+                    'https://image.tmdb.org/t/p/original' + movie.poster_path,
                 title: movie.original_title,
                 releaseDate: movie.release_date,
             };
