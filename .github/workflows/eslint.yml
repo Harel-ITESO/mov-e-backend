@@ -4,8 +4,7 @@ name: ESLint
 
 on:
     push:
-        branches: ['*'] # Run on each push
-        branches-ignore: [main, dev] # Ignore 'dev' and 'main', just run it on feature branches
+        branches-ignore: [main, dev] # Only ignore 'dev' and 'main', run on all other branches
     pull_request:
         branches: [main, dev]
 
