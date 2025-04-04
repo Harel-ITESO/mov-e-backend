@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD as PROXY_GUARD } from '@nestjs/core';
 import { PrismaService } from './services/prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
@@ -12,10 +13,31 @@ import { EmailVerificationModule } from './modules/email-verification/email-veri
 import { S3Service } from './services/aws/s3/s3.service';
 import { AccountModule } from './modules/account/account.module';
 import { FilesModule } from './modules/files/files.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import ThrottleBehindProxy from './guards/throttler-behind-proxy.guard';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
+        ThrottlerModule.forRoot({
+            throttlers: [
+                {
+                    name: 'short',
+                    ttl: 1000,
+                    limit: 3,
+                },
+                {
+                    name: 'medium',
+                    ttl: 10000,
+                    limit: 20,
+                },
+                {
+                    name: 'long',
+                    ttl: 60000,
+                    limit: 100,
+                },
+            ],
+        }),
         UserModule,
         AuthenticationModule,
         MoviesModule,
@@ -25,6 +47,16 @@ import { FilesModule } from './modules/files/files.module';
         FilesModule,
     ],
     controllers: [],
-    providers: [PrismaService, DynamoService, EnvConfigService, SesService, S3Service],
+    providers: [
+        PrismaService,
+        DynamoService,
+        EnvConfigService,
+        SesService,
+        S3Service,
+        {
+            provide: PROXY_GUARD,
+            useClass: ThrottleBehindProxy,
+        },
+    ],
 })
 export class AppModule {}

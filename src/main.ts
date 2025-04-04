@@ -4,9 +4,13 @@ import { PrismaClientExceptionFilter } from './filters/prisma-client-exception/p
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { EnvConfigService } from './services/env/env-config.service';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+    app.set('trust proxy', 1); // This only works in prod btw... Trusts the proxy IP from each request
+
     app.setGlobalPrefix('v1/api');
 
     app.use(cookieParser(EnvConfigService.getCookieSecret())); // Parse cookies
@@ -20,6 +24,7 @@ async function bootstrap() {
     ); // Validate DTOs received on controllers
 
     app.useGlobalFilters(new PrismaClientExceptionFilter());
+
     await app.listen(8080);
 }
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
