@@ -110,4 +110,51 @@ export class UserService {
         });
         return userUpdated;
     }
+
+    /**
+     * Retrieves all the ratings a user has done
+     * @param userId The user id
+     * @returns The ratings found
+     */
+    async getRatings(userId: number) {
+        const ratings = await this.prismaService.rating.findMany({
+            where: { userId, },
+            include: { toMovie: true, },
+        });
+        const ratingsFiltered = await Promise.all(
+            ratings.map(async rating => {
+                const likes = await this.prismaService.ratingLike.count({
+                    where: { ratingId: rating.id, },
+                });
+                const myLike = await this.prismaService.ratingLike.findUnique({
+                    where: {
+                        userId_ratingId: {
+                            ratingId: rating.id,
+                            userId,
+                        },
+                    },
+                });
+                const hasMyLike = !!myLike;
+                return {
+                    rating: {
+                        id: rating.id,
+                        rating: rating.rating.toNumber(),
+                        commentary: rating.commentary,
+                        likes,
+                        hasMyLike,
+                    },
+                    movie: {
+                        id: rating.toMovie.tmdbId,
+                        title: rating.toMovie.title,
+                        genres: rating.toMovie.genres,
+                        overview: rating.toMovie.overview,
+                        posterPath: rating.toMovie.posterPath,
+                        year: rating.toMovie.year,
+                        duration: rating.toMovie.duration,
+                    },
+                };
+            })
+        );
+        return { ratings: ratingsFiltered };
+    }
 }

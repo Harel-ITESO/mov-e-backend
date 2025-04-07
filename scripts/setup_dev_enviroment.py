@@ -21,6 +21,12 @@ def resolve_command(command: list[str]):
     return string_cmd
 
 
+def resolve_parameter(parameter: str):
+    if platform.system() == "Windows":
+        return parameter
+    return f"'{parameter}'"
+
+
 # Resolves and runs a given command, handles error throwing
 def run_command(command: list[str]):
     result = subprocess.run(
@@ -55,7 +61,7 @@ def create_dynamo_tables():
                 "dynamodb",
                 "create-table",
                 "--cli-input-json",
-                f"'{json_str}'",
+                resolve_parameter(json_str),
                 "--endpoint-url",
                 "http://localhost:4566",
             ]
@@ -69,7 +75,7 @@ def setup_ses_connection():
         "ses",
         "verify-email-identity",
         "--email-address",
-        "'noreply@move.com'",
+        resolve_parameter("noreply@move.com"),
         "--endpoint-url",
         "http://localhost:4566",
     ]
