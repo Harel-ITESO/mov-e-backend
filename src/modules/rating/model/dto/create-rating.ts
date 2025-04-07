@@ -5,8 +5,8 @@ export class CreateRatingDto {
   movieId: number;
 
   @IsNumber()
-  @Min(5)
-  @Max(50)
+  @Min(0.5)
+  @Max(5)
   rating: number;
 
   @IsOptional()

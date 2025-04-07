@@ -4,15 +4,11 @@ import { SessionAuthGuard } from '../authentication/guards/session-auth.guard';
 import { CreateRatingDto } from './model/dto/create-rating';
 import { Request } from 'express';
 import { User } from '@prisma/client';
-import { MoviesService } from '../movies/movies.service';
 
 // v1/api/ratings
 @Controller('ratings')
 export class RatingController {
-  constructor(
-    private readonly ratingService: RatingService,
-    private readonly movieService: MoviesService,
-  ) { }
+  constructor(private readonly ratingService: RatingService) {}
 
   // v1/api/ratings
   @Post('')
@@ -22,10 +18,10 @@ export class RatingController {
     @Body() { movieId, rating, commentary }: CreateRatingDto,
   ) {
     const user = request.user as User;
-    if (rating % 5 != 0) {
+    if ((rating*10) % 5 != 0) {
       throw new BadRequestException('Invalid rating');
     }
-    const movie = await this.movieService.createMovie(movieId);
+    const movie = await this.ratingService.getMovieToRate(movieId);
     if (!movie) {
       throw new NotFoundException('Movie not found');
     }

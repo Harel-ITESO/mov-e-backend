@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/services/prisma/prisma.service';
+import { MoviesService } from '../movies/movies.service';
 
 @Injectable()
 export class RatingService {
     constructor(
         private readonly prismaService: PrismaService,
+        private readonly movieService: MoviesService,
     ) {}
 
     /**
@@ -63,8 +65,8 @@ export class RatingService {
     public createRating(userId: number, movieId: number, rating: number, commentary: string | undefined) {
         return this.prismaService.rating.create({
             data: {
-                rating: rating / 10,
-                commentary: commentary,
+                rating,
+                commentary,
                 movieId,
                 userId,
             },
@@ -139,5 +141,14 @@ export class RatingService {
                 },
             },
         });
+    }
+
+    /**
+     * Looks for the movie that will be rated
+     * @param movieId The movie id
+     * @returns The movie if found, otherwise `null`
+     */
+    public getMovieToRate(movieId: number) {
+        return this.movieService.createMovie(movieId);
     }
 }
