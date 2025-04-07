@@ -5,10 +5,10 @@ import { SendData } from './models/types/send-data';
 
 @Injectable()
 export class SesService {
-    private readonly ses: SESClient;
+    private readonly client: SESClient;
 
     constructor(private readonly envConfigService: EnvConfigService) {
-        this.ses = new SESClient({
+        this.client = new SESClient({
             region: envConfigService.AWS_REGION,
             endpoint: envConfigService.isDevEnv()
                 ? envConfigService.LOCAL_AWS_ENDPOINT
@@ -26,7 +26,7 @@ export class SesService {
      */
     public async sendEmail(data: SendData) {
         const { toAddresses, subject, html, text } = data;
-        return await this.ses.send(
+        return await this.client.send(
             new SendEmailCommand({
                 Source: this.envConfigService.EMAIL_SENDER,
                 Destination: {
