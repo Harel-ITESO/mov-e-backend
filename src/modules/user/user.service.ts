@@ -114,6 +114,7 @@ export class UserService {
                 id: userId,
             },
         });
+        return userUpdated;
     }
 
     /**
