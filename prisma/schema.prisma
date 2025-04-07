@@ -14,21 +14,24 @@ datasource db {
 }
 
 model User {
-  id              Int     @id @default(autoincrement())
-  username        String  @unique
-  email           String  @unique
-  password        String
-  givenName       String? @map("given_name")
-  familyName      String? @map("family_name")
-  location        String?
-  website         String?
-  bio             String?
-  avatarImagePath String? @map("avatar_image_path")
+  id                  Int     @id @default(autoincrement())
+  username            String  @unique
+  email               String  @unique
+  password            String
+  givenName           String? @map("given_name")
+  familyName          String? @map("family_name")
+  location            String?
+  website             String?
+  bio                 String?
+  avatarImagePath     String? @map("avatar_image_path")
+  favoriteThreeMovies Json?   @map("favorite_three_movies") // Maximum of 3 items allowed - must be validated at application level
 
   rating     Rating[]
   ratingLike RatingLike[]
   followers  UserFollow[] @relation("follower")
   following  UserFollow[] @relation("following")
+
+  @@map("user")
 }
 
 // An instance of movie should only be created if an interaction exists
@@ -42,6 +45,8 @@ model Movie {
   year       Int
   duration   Int
   rating     Rating[]
+
+  @@map("movie")
 }
 
 model Rating {
@@ -56,6 +61,7 @@ model Rating {
   ratingLike RatingLike[]
 
   @@unique([userId, movieId])
+  @@map("rating")
 }
 
 model RatingLike {
@@ -66,6 +72,7 @@ model RatingLike {
   rating Rating @relation(fields: [ratingId], references: [id])
 
   @@unique([userId, ratingId])
+  @@map("rating_like")
 }
 
 model UserFollow {
@@ -76,4 +83,5 @@ model UserFollow {
   following User @relation("following", fields: [followingId], references: [id])
 
   @@unique([followerId, followingId])
+  @@map("user_follow")
 }
