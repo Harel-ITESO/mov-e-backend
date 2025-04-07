@@ -25,17 +25,23 @@ export class UserService {
 
     /**
      * Find a user by his ID
-     * @param userId Id of the user
+     * @param userId The user id
+     * @param filterPassword If false, the password won't be removed from user data
      * @returns The user if found or `null`
      */
-    public async getUserById(userId: number, filterPassword?: boolean) {
-        const user = await this.prismaService.user.findFirstOrThrow({
+    public async getUserById(userId: number, filterPassword?: boolean): Promise<User | UserWithoutPassword | null> {
+        const user = await this.prismaService.user.findUnique({
             where: {
                 id: userId,
             },
         });
-        if (filterPassword) return this.filterPasswordFromUser(user);
-        return user;
+        if (!user) {
+            return user;
+        }
+        if (typeof filterPassword == 'boolean' && !filterPassword) {
+            return user;
+        }
+        return this.filterPasswordFromUser(user);
     }
 
     /**
@@ -109,5 +115,70 @@ export class UserService {
             },
         });
         return userUpdated;
+    }
+
+    /**
+     * Gets a follow relation between 2 users
+     * @param followerId The follower id
+     * @param followingId The following id
+     * @returns The relation if found, otherwise `null`
+     */
+    public getFollowRelation(followerId: number, followingId: number) {
+        return this.prismaService.userFollow.findUnique({
+            where: {
+                followerId_followingId: {
+                    followerId,
+                    followingId,
+                },
+            },
+        });
+    }
+
+    /**
+     * Creates a follow relation between 2 users
+     * @param followerId The follower id
+     * @param followingId The following id
+     * @returns The relation created
+     */
+    public createFollowRelation(followerId: number, followingId: number) {
+        return this.prismaService.userFollow.create({
+            data: {
+                followerId,
+                followingId,
+            },
+        });
+    }
+
+    /**
+     * Gets all the follow relations a user has
+     * @param userId The user id
+     * @returns The follow relations list
+     */
+    public async getAllFollowRelations(userId: number) {
+        return this.prismaService.userFollow.findMany({
+            where: { followerId: userId, },
+            include: { following: true, },
+        }).then(following => {
+            return following.map(followRelation => {
+                return this.filterPasswordFromUser(followRelation.following);
+            });
+        });
+    }
+
+    /**
+     * Deletes a follow relation between 2 users
+     * @param followerId The follower id
+     * @param followingId The following id
+     * @returns The relation deleted
+     */
+    public deleteFollowRelation(followerId: number, followingId: number) {
+        return this.prismaService.userFollow.delete({
+            where: {
+                followerId_followingId: {
+                    followerId,
+                    followingId,
+                },
+            },
+        });
     }
 }
