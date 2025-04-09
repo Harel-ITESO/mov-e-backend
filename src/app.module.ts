@@ -15,7 +15,9 @@ import { S3Service } from './services/aws/s3/s3.service';
 import { AccountModule } from './modules/account/account.module';
 import { FilesModule } from './modules/files/files.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { TmdbService } from './services/tmdb/tmdb.service';
 import ThrottleBehindProxy from './guards/throttler-behind-proxy.guard';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
     imports: [
@@ -47,6 +49,7 @@ import ThrottleBehindProxy from './guards/throttler-behind-proxy.guard';
         EmailVerificationModule,
         AccountModule,
         FilesModule,
+        HttpModule,
     ],
     controllers: [],
     providers: [
@@ -59,6 +62,7 @@ import ThrottleBehindProxy from './guards/throttler-behind-proxy.guard';
             provide: PROXY_GUARD,
             useClass: ThrottleBehindProxy,
         },
+        TmdbService,
     ],
 })
 export class AppModule {}
