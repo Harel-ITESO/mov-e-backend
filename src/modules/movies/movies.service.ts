@@ -41,6 +41,8 @@ export class MoviesService {
      * @returns
      */
     public async findMovieOnApi(tmdbId: number) {
+        const movie = await this.tmdbService.getMovieDetailById(tmdbId);
+        if (!movie) return null;
         return MovieParser.parseFromTmdb(
             'detail',
             await this.tmdbService.getMovieDetailById(tmdbId),
@@ -56,9 +58,7 @@ export class MoviesService {
         try {
             const fromDatabase = await this.findMovieOnLocalDatabase(tmdbId);
             if (fromDatabase) {
-                const { tmdbId, ...rest } = fromDatabase;
-                rest.id = tmdbId;
-                return rest;
+                return MovieParser.parseFromDatabase(fromDatabase);
             }
             const fromApi = await this.findMovieOnApi(tmdbId);
             return fromApi;
