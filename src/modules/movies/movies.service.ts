@@ -1,213 +1,82 @@
-import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
-import { EnvConfigService } from 'src/services/env/env-config.service';
-import { TMDB_Movie } from 'src/types/tmdb-movie';
-import { Movie } from '@prisma/client';
-import { UserService } from '../user/user.service';
-import { PrismaService } from 'src/services/prisma/prisma.service';
+import { Injectable, Logger } from '@nestjs/common';
 
-type TmdbApiResponse = {
-    id: number;
-    poster_path: string;
-    original_title: string;
-    release_date: string;
-};
+import { PrismaService } from 'src/services/prisma/prisma.service';
+import { TmdbService } from 'src/services/tmdb/tmdb.service';
+import { MovieParser } from './movie-parser';
+import { CreateMovieDto } from './models/dto/create-movie.dto';
+import { ApiMovieDetail } from './models/types/movie-types';
 
 @Injectable()
 export class MoviesService {
-    private API_URL = 'https://api.themoviedb.org/3';
-    private API_KEY: string;
-
+    private readonly logger = new Logger(MoviesService.name);
     constructor(
-        private readonly httpService: HttpService,
-        private readonly envConfigService: EnvConfigService,
         private readonly prismaService: PrismaService,
-        private readonly userService: UserService,
-    ) {
-        this.API_KEY = this.envConfigService.TMDB_API_KEY;
-    }
+        private readonly tmdbService: TmdbService,
+    ) {}
 
     /**
      * Searches movies by title in TMDb API
      * @param title Title of the movie
      * @returns An Array of the movies found
      */
-    async searchMoviesByTitle(title: string) {
-        const response = await firstValueFrom(
-            this.httpService.get<{
-                results: TmdbApiResponse[];
-            }>(`${this.API_URL}/search/movie`, {
-                params: {
-                    api_key: this.API_KEY,
-                    query: title,
-                    language: 'es-ES',
-                },
-                headers: {
-                    Authorization: `Bearer ${this.API_KEY}`,
-                },
-            }),
-        );
+    public async searchMoviesByTitle(title: string) {
+        const data = await this.tmdbService.searchMoviesByTitle(title);
+        return data.map((e) => MovieParser.parseFromTmdb('search', e));
+    }
 
-        return response.data.results.map((movie) => {
-            return {
-                id: movie.id,
-                posterPath:
-                    'https://image.tmdb.org/t/p/original' + movie.poster_path,
-                title: movie.original_title,
-                releaseDate: movie.release_date,
-            };
+    /**
+     * Tries to find movie from local database
+     * @param tmdbId
+     * @returns
+     */
+    public async findMovieOnLocalDatabase(tmdbId: number) {
+        return await this.prismaService.movie.findFirst({
+            where: { tmdbId },
         });
     }
 
     /**
-     * Looks for a movie in TMDB
-     * @param movieId The movie id
-     * @returns The movie if found, otherwise `null`
+     * Tries to find the movie from the external TMDB Api
+     * @param tmdbId
+     * @returns
      */
-    async tmdbGetMovie(movieId: number): Promise<TMDB_Movie | null> {
+    public async findMovieOnApi(tmdbId: number) {
+        const movie = await this.tmdbService.getMovieDetailById(tmdbId);
+        if (!movie) return null;
+        return MovieParser.parseFromTmdb(
+            'detail',
+            await this.tmdbService.getMovieDetailById(tmdbId),
+        ) as ApiMovieDetail;
+    }
+
+    /**
+     * Gets the detail of a movie from local or tmdb if not found
+     * @param tmdbId The id of the tmdb database
+     * @returns The detail of the movie
+     */
+    public async getMovieDetail(tmdbId: number) {
         try {
-            const response = await firstValueFrom(
-                this.httpService.get<TMDB_Movie>(
-                    `${this.API_URL}/movie/${movieId}`,
-                    {
-                        params: {
-                            api_key: this.API_KEY,
-                            language: 'es-ES',
-                        },
-                        headers: {
-                            Authorization: `Bearer ${this.API_KEY}`,
-                        },
-                    },
-                ),
-            );
-            return response.data;
-        } catch {
-            return null;
-        }
-    }
-
-    /**
-     * Looks for a movie in the local database
-     * @param movieId The movie id
-     * @returns The movie if found, otherwise `null`
-     */
-    async localGetMovie(movieId: number): Promise<Movie | null> {
-        const movie = await this.prismaService.movie.findFirst({
-            where: { tmdbId: movieId, }
-        });
-        return movie;
-    }
-
-    /**
-     * Copies the movie from TMDB to the local database
-     * @param movie The movie with TMDB format
-     * @returns The movie created
-     */
-    async copyMovieFromTmdbToLocal(movie: TMDB_Movie): Promise<Movie> {
-        const genres = JSON.stringify(
-            movie.genres.map(genre => genre.name)
-        );
-        const year = new Date(movie.release_date).getFullYear();
-        return this.prismaService.movie.create({
-            data: {
-                tmdbId: movie.id,
-                title: movie.title,
-                genres,
-                overview: movie.overview,
-                posterPath: movie.poster_path,
-                year,
-                duration: movie.runtime,
+            const fromDatabase = await this.findMovieOnLocalDatabase(tmdbId);
+            if (fromDatabase) {
+                return MovieParser.parseFromDatabase(fromDatabase);
             }
-        });
-    }
-
-    /**
-     * Looks for a movie in local database, if found, it's returned.
-     * If not, looks for the movie in TMDB, if found, return it.
-     * If not, returns `null`.
-     * @param movieId The movie id
-     * @returns The movie if found, otherwise `null`
-     */
-    async getMovie(movieId: number): Promise<MovieFound | null> {
-        const movie = await this.localGetMovie(movieId);
-        if (movie) {
-            return { isLocalMovie: true, movie, };
-        }
-        const movieTMDB = await this.tmdbGetMovie(movieId);
-        if (movieTMDB) {
-            return { isLocalMovie: false, movie: movieTMDB, };
-        }
-        return null;
-    }
-    
-    /**
-     * Looks for a movie in local database, if found, it's returned.
-     * If not, looks for the movie in TMDB, if found, create that register in local database and return it.
-     * If not, returns `null`.
-     * @param movieId The movie id
-     * @returns The movie if found, otherwise `null`
-     */
-    async createMovie(movieId: number): Promise<Movie | null> {
-        const movieFound = await this.getMovie(movieId);
-        if (!movieFound) {
+            const fromApi = await this.findMovieOnApi(tmdbId);
+            return fromApi;
+        } catch (e) {
+            this.logger.error(e);
             return null;
         }
-        const { isLocalMovie, movie, } = movieFound;
-        if (isLocalMovie) {
-            return movie as Movie;
-        }
-        const movieCreated = await this.copyMovieFromTmdbToLocal(movie as TMDB_Movie);
-        return movieCreated;
     }
 
     /**
-     * Retrieves all the ratings a movie has
-     * @param userId The user id
-     * @param movieId The movie id
-     * @returns The ratings found
+     * Creates a movie to the database (This should only be accesible by an external handler)
+     * @param data The data to add
+     * @returns The created movie
      */
-    async getRatings(userId: number, movieId: number) {
-        const ratings = await this.prismaService.rating.findMany({
-            where: { movieId, },
-            include: { fromUser: true, },
+    public async addMovieToDatabase(data: CreateMovieDto) {
+        const result = await this.prismaService.movie.create({
+            data,
         });
-        let ratingSum = 0;
-        const ratingsFiltered = await Promise.all(
-            ratings.map(async rating => {
-                const likes = await this.prismaService.ratingLike.count({
-                    where: { ratingId: rating.id, },
-                });
-                const myLike = await this.prismaService.ratingLike.findUnique({
-                    where: {
-                        userId_ratingId: {
-                            ratingId: rating.id,
-                            userId,
-                        },
-                    },
-                });
-                const hasMyLike = !!myLike;
-                const user = this.userService.filterPasswordFromUser(rating.fromUser);
-                ratingSum += rating.rating.toNumber();
-                return {
-                    rating: {
-                        id: rating.id,
-                        rating: rating.rating.toNumber(),
-                        commentary: rating.commentary,
-                        likes,
-                        hasMyLike,
-                    },
-                    user,
-                };
-            })
-        );
-        const averageRating = ratingsFiltered.length > 0
-            ? ratingSum / ratingsFiltered.length : null;
-        return { ratings: ratingsFiltered, averageRating };
+        return result;
     }
-}
-
-interface MovieFound {
-    isLocalMovie: boolean;
-    movie: Movie | TMDB_Movie;
 }

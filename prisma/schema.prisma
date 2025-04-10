@@ -60,7 +60,7 @@ model Rating {
   fromUser   User         @relation(fields: [userId], references: [id])
   ratingLike RatingLike[]
 
-  @@unique([userId, movieId])
+  @@unique([userId, movieId]) // This will avoid rating duplications
   @@map("rating")
 }
 
