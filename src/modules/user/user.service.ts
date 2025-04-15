@@ -118,13 +118,13 @@ export class UserService {
      */
     async getRatings(userId: number) {
         const ratings = await this.prismaService.rating.findMany({
-            where: { userId, },
-            include: { toMovie: true, },
+            where: { userId },
+            include: { toMovie: true },
         });
         const ratingsFiltered = await Promise.all(
-            ratings.map(async rating => {
+            ratings.map(async (rating) => {
                 const likes = await this.prismaService.ratingLike.count({
-                    where: { ratingId: rating.id, },
+                    where: { ratingId: rating.id },
                 });
                 const myLike = await this.prismaService.ratingLike.findUnique({
                     where: {
@@ -153,7 +153,7 @@ export class UserService {
                         duration: rating.toMovie.duration,
                     },
                 };
-            })
+            }),
         );
         return { ratings: ratingsFiltered };
     }
