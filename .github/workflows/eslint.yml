@@ -3,8 +3,6 @@
 name: ESLint
 
 on:
-    push:
-        branches-ignore: [main, dev] # Only ignore 'dev' and 'main', run on all other branches
     pull_request:
         branches: [main, dev]
 
