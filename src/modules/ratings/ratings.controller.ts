@@ -64,7 +64,7 @@ export class RatingsController {
     @Delete(':ratingId/like')
     public async deleteRatingLike(
         @CurrentSessionUser() user: SessionUser,
-        @Param('ratingId', ParseIntPipe) ratingId: number,
+        @Param('ratingId') ratingId: number,
     ) {
         await this.ratingService.deleteRatingLike(user.id, ratingId);
         return { message: 'Like deleted' };
