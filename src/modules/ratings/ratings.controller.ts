@@ -5,7 +5,6 @@ import {
     Delete,
     NotFoundException,
     Param,
-    ParseIntPipe,
     Post,
     UseGuards,
 } from '@nestjs/common';
@@ -44,7 +43,7 @@ export class RatingsController {
     @Delete(':ratingId')
     public async deleteRating(
         @CurrentSessionUser() user: SessionUser,
-        @Param('ratingId', ParseIntPipe) ratingId: number,
+        @Param('ratingId') ratingId: number,
     ) {
         await this.ratingService.deleteRating(user.id, ratingId);
         return { message: 'Rating deleted' };

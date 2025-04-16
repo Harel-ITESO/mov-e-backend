@@ -65,6 +65,7 @@
         "@types/passport-local": "^1.0.38",
         "@types/supertest": "^6.0.2",
         "audit-ci": "^7.1.0",
+        "cz-conventional-changelog": "^3.3.0",
         "eslint": "^9.18.0",
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-prettier": "^5.2.2",
@@ -99,5 +100,10 @@
         ],
         "coverageDirectory": "../coverage",
         "testEnvironment": "node"
+    },
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-conventional-changelog"
+        }
     }
 }
