@@ -116,45 +116,27 @@ export class UserService {
      * @param userId The user id
      * @returns The ratings found
      */
-    async getRatings(userId: number) {
-        const ratings = await this.prismaService.rating.findMany({
-            where: { userId },
-            include: { toMovie: true },
-        });
-        const ratingsFiltered = await Promise.all(
-            ratings.map(async (rating) => {
-                const likes = await this.prismaService.ratingLike.count({
-                    where: { ratingId: rating.id },
-                });
-                const myLike = await this.prismaService.ratingLike.findUnique({
-                    where: {
-                        userId_ratingId: {
-                            ratingId: rating.id,
-                            userId,
+    async getRatingsByUser(userId: number) {
+        const user = await this.prismaService.user.findUniqueOrThrow({
+            include: {
+                rating: {
+                    select: {
+                        rating: true,
+                        commentary: true,
+                        toMovie: {
+                            select: {
+                                tmdbId: true,
+                                posterPath: true,
+                                title: true,
+                            },
                         },
                     },
-                });
-                const hasMyLike = !!myLike;
-                return {
-                    rating: {
-                        id: rating.id,
-                        rating: rating.rating.toNumber(),
-                        commentary: rating.commentary,
-                        likes,
-                        hasMyLike,
-                    },
-                    movie: {
-                        id: rating.toMovie.tmdbId,
-                        title: rating.toMovie.title,
-                        genres: rating.toMovie.genres,
-                        overview: rating.toMovie.overview,
-                        posterPath: rating.toMovie.posterPath,
-                        year: rating.toMovie.year,
-                        duration: rating.toMovie.duration,
-                    },
-                };
-            }),
-        );
-        return { ratings: ratingsFiltered };
+                },
+            },
+            where: { id: userId },
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...rest } = user;
+        return rest;
     }
 }

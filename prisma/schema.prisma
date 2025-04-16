@@ -56,8 +56,8 @@ model Rating {
   rating     Decimal
   commentary String?
 
-  toMovie    Movie        @relation(fields: [movieId], references: [id])
-  fromUser   User         @relation(fields: [userId], references: [id])
+  toMovie    Movie        @relation(fields: [movieId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  fromUser   User         @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   ratingLike RatingLike[]
 
   @@unique([userId, movieId]) // This will avoid rating duplications
@@ -68,8 +68,8 @@ model RatingLike {
   userId   Int @map("user_id")
   ratingId Int @map("rating_id")
 
-  user   User   @relation(fields: [userId], references: [id])
-  rating Rating @relation(fields: [ratingId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  rating Rating @relation(fields: [ratingId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@unique([userId, ratingId])
   @@map("rating_like")
@@ -79,8 +79,8 @@ model UserFollow {
   followerId  Int @map("follower_id")
   followingId Int @map("following_id")
 
-  follower  User @relation("follower", fields: [followerId], references: [id])
-  following User @relation("following", fields: [followingId], references: [id])
+  follower  User @relation("follower", fields: [followerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@unique([followerId, followingId])
   @@map("user_follow")

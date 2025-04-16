@@ -1,13 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './filters/prisma-client-exception/prisma-client-exception.filter';
-import { ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { EnvConfigService } from './services/env/env-config.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+        logger: new ConsoleLogger({
+            json: process.env.NODE_ENV === 'production',
+        }),
+    });
 
     app.set('trust proxy', 1); // This only works in prod btw... Trusts the proxy IP from each request
 
