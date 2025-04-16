@@ -33,6 +33,12 @@ export class AccountController {
         return await this.accountService.getPersonalAccountSummary(user.id);
     }
 
+    // v1/api/account/ratings
+    @Get('ratings')
+    public async getAccountRatings(@CurrentSessionUser() user: SessionUser) {
+        return await this.accountService.getAccountRatings(user.id);
+    }
+
     // v1/api/account/profile-picture/upload
     @Post('profile-picture/upload')
     @UseInterceptors(FileInterceptor('profile-picture'))

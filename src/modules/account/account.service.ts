@@ -113,4 +113,15 @@ export class AccountService {
         );
         return { message: 'Favorite movie removed' };
     }
+
+    /**
+     * Retrieves all ratings by the account;
+     * @param userId
+     * @returns
+     */
+    public async getAccountRatings(userId: number) {
+        const { rating: ratings } =
+            await this.usersService.getRatingsByUser(userId);
+        return ratings;
+    }
 }

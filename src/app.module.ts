@@ -6,7 +6,7 @@ import { UserModule } from './modules/user/user.module';
 import { AuthenticationModule } from './modules/authentication/authentication.module';
 import { MoviesModule } from './modules/movies/movies.module';
 import { DynamoService } from './services/aws/dynamo/dynamo.service';
-import { RatingModule } from './modules/rating/rating.module';
+import { RatingsModule } from './modules/ratings/ratings.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { EnvConfigService } from './services/env/env-config.service';
 import { SesService } from './services/aws/ses/ses.service';
@@ -44,7 +44,7 @@ import { HttpModule } from '@nestjs/axios';
         UserModule,
         AuthenticationModule,
         MoviesModule,
-        RatingModule,
+        RatingsModule,
         SessionsModule,
         EmailVerificationModule,
         AccountModule,

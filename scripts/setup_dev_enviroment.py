@@ -171,6 +171,7 @@ def create_enviroment_variables():
         "AWS_ACCESS_KEY_ID": aws_credentials.get("access_key_id"),
         "AWS_SECRET_ACCESS_KEY": aws_credentials.get("secret_access_key"),
         "AWS_DEFAULT_REGION": "us-east-1",
+        "NODE_ENV": "development"
     }
 
     file_result = ""
