@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD as PROXY_GUARD } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_GUARD as PROXY_GUARD } from '@nestjs/core';
 import { PrismaService } from './services/prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
@@ -7,7 +7,6 @@ import { AuthenticationModule } from './modules/authentication/authentication.mo
 import { MoviesModule } from './modules/movies/movies.module';
 import { DynamoService } from './services/aws/dynamo/dynamo.service';
 import { RatingsModule } from './modules/ratings/ratings.module';
-import { SessionsModule } from './modules/sessions/sessions.module';
 import { EnvConfigService } from './services/env/env-config.service';
 import { SesService } from './services/aws/ses/ses.service';
 import { EmailVerificationModule } from './modules/email-verification/email-verification.module';
@@ -18,9 +17,20 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TmdbService } from './services/tmdb/tmdb.service';
 import ThrottleBehindProxy from './guards/throttler-behind-proxy.guard';
 import { HttpModule } from '@nestjs/axios';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { createKeyv } from '@keyv/redis';
 
 @Module({
     imports: [
+        CacheModule.registerAsync({
+            isGlobal: true,
+            useFactory: () => {
+                return {
+                    stores: [createKeyv(process.env.REDIS_CACHE_URL)],
+                    ttl: 86400000,
+                };
+            },
+        }),
         ConfigModule.forRoot({ isGlobal: true }),
         ThrottlerModule.forRoot({
             throttlers: [
@@ -45,7 +55,6 @@ import { HttpModule } from '@nestjs/axios';
         AuthenticationModule,
         MoviesModule,
         RatingsModule,
-        SessionsModule,
         EmailVerificationModule,
         AccountModule,
         FilesModule,
@@ -61,6 +70,10 @@ import { HttpModule } from '@nestjs/axios';
         {
             provide: PROXY_GUARD,
             useClass: ThrottleBehindProxy,
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: CacheInterceptor, // Globally provide cache for each controller on GET requests
         },
         TmdbService,
     ],

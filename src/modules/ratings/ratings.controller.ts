@@ -11,7 +11,7 @@ import {
 import { RatingsService } from './ratings.service';
 import { SessionAuthGuard } from '../authentication/guards/session-auth.guard';
 import { CreateRatingDto } from './model/dto/create-rating.dto';
-import { CurrentSessionUser } from '../sessions/session-user.decorator';
+import { CurrentSessionUser } from '../authentication/decorators/current-session-user.decorator';
 import { SessionUser } from '../authentication/models/types/session-user';
 
 // v1/api/ratings

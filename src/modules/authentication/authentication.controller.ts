@@ -3,19 +3,16 @@ import {
     Body,
     Controller,
     Delete,
-    Get,
     NotFoundException,
     Param,
     Post,
     Req,
     Res,
-    UnauthorizedException,
     UseGuards,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Request, Response } from 'express';
-import { UserWithoutPassword } from '../user/model/types/user-without-password';
 import { SessionAuthGuard } from './guards/session-auth.guard';
 import { JwtGuard } from './guards/jwt.guard';
 import { SignupWithoutEmailDto } from './models/dto/signup-without-email.dto';
@@ -43,10 +40,12 @@ export class AuthenticationController {
     }
 
     // v1/api/authentication/register/verification/:verificationId
-    @Get('register/email/verification/:verificationId')
-    public async verifyEmail(@Param('verificationId') verificationId: string) {
+    @Post('register/email/verification/:verificationId')
+    public async processEmailVerification(
+        @Param('verificationId') verificationId: string,
+    ) {
         try {
-            return await this.authenticationService.verifyEmailRegistered(
+            return await this.authenticationService.processPendingEmailVerification(
                 verificationId,
             );
         } catch (e) {
@@ -80,37 +79,21 @@ export class AuthenticationController {
     // v1/api/authentication/login
     @Post('login')
     @UseGuards(LocalAuthGuard)
-    public async login(
-        @Req() request: Request,
-        @Res({ passthrough: true }) response: Response,
-    ) {
-        const user = request.user as UserWithoutPassword;
-        const session = await this.authenticationService.generateSession(
-            user.id,
-            user.username,
-            user.email,
-        );
-        const { sessionId, expiresAt } = session;
-        response.cookie('sessionId', sessionId, {
-            expires: new Date(expiresAt),
-            httpOnly: true,
-            signed: true,
-        });
+    public login() {
         return { message: "You're logged in" };
     }
 
     // v1/api/authentication/logout
     @Delete('logout')
     @UseGuards(SessionAuthGuard)
-    public async logout(
+    public logout(
         @Req() request: Request,
         @Res({ passthrough: true }) response: Response,
     ) {
-        const sessionId = request.signedCookies['sessionId'] as string;
-        if (!sessionId)
-            throw new UnauthorizedException('You are not logged in');
-        await this.authenticationService.logoutFromSession(sessionId);
-        response.clearCookie('sessionId');
+        response.clearCookie('connect.sid'); // remove cookie
+        request.session.destroy((err) => {
+            if (err) throw new BadRequestException('Unable to logout');
+        });
         return { message: 'Successfully logged out' };
     }
 }

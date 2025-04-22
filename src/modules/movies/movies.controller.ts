@@ -4,11 +4,14 @@ import {
     NotFoundException,
     Param,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { SessionAuthGuard } from '../authentication/guards/session-auth.guard';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('movies')
+@UseInterceptors(CacheInterceptor) // cache all requests
 @UseGuards(SessionAuthGuard)
 export class MoviesController {
     constructor(private readonly moviesService: MoviesService) {}

@@ -19,7 +19,10 @@ export class EnvConfigService {
     public readonly COOKIE_SECRET: string;
     public readonly LOCAL_AWS_ENDPOINT: string;
     public readonly BUCKET_NAME: string;
-    public readonly JWT_SECRET: string;
+    public readonly EMAIL_VERIFICATION_JWT_SECRET: string;
+    public readonly RESET_PASSWORD_JWT_SECRET: string;
+    public readonly REDIS_SESSION_URL: string;
+    public readonly REDIS_CACHE_URL: string;
 
     constructor(private readonly configService: ConfigService) {
         this.NODE_ENV = this.configService.getOrThrow<ENV>('NODE_ENV');
@@ -31,8 +34,18 @@ export class EnvConfigService {
             this.configService.getOrThrow<string>('TMDB_API_KEY');
         this.COOKIE_SECRET =
             this.configService.getOrThrow<string>('COOKIE_SECRET');
-        this.JWT_SECRET = this.configService.getOrThrow<string>('JWT_SECRET');
+        this.EMAIL_VERIFICATION_JWT_SECRET =
+            this.configService.getOrThrow<string>(
+                'EMAIL_VERIFICATION_JWT_SECRET',
+            );
+        this.RESET_PASSWORD_JWT_SECRET = this.configService.getOrThrow<string>(
+            'RESET_PASSWORD_JWT_SECRET',
+        );
         this.BUCKET_NAME = this.configService.getOrThrow<string>('BUCKET_NAME');
+        this.REDIS_SESSION_URL =
+            this.configService.getOrThrow<string>('REDIS_SESSION_URL');
+        this.REDIS_CACHE_URL =
+            this.configService.getOrThrow<string>('REDIS_CACHE_URL');
         if (this.NODE_ENV == ENV.PRODUCTION) {
             this.AWS_REGION =
                 this.configService.getOrThrow<string>('AWS_REGION');
@@ -68,7 +81,13 @@ export class EnvConfigService {
      * Get the cookie secret retrieved from environment variables
      * @returns The cookie secret
      */
-    static getCookieSecret() {
-        return process.env.COOKIE_SECRET;
+    static getCookieSecret(throwError?: boolean) {
+        const secret = process.env.COOKIE_SECRET;
+        if (throwError && !secret) {
+            throw new Error(
+                'Cookie secret was not found on enviroment variables',
+            );
+        }
+        return secret || '';
     }
 }
