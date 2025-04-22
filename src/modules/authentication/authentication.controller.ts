@@ -94,6 +94,6 @@ export class AuthenticationController {
         request.session.destroy((err) => {
             if (err) throw new BadRequestException('Unable to logout');
         });
-        return { message: 'Succesfully logged out' };
+        return { message: 'Successfully logged out' };
     }
 }

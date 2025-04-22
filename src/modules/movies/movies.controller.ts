@@ -19,7 +19,6 @@ export class MoviesController {
     // v1/api/movies/search/:title
     @Get('search/:title')
     public async searchMovies(@Param('title') title: string) {
-        console.log('Hello');
         return await this.moviesService.searchMoviesByTitle(title);
     }
 
