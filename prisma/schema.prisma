@@ -14,32 +14,24 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  username        String
-  email           String
-  password        String
-  givenName       String?  @map("given_name")
-  familyName      String?  @map("family_name")
-  location        String?
-  website         String?
-  bio             String?
-  avatarImagePath String?  @map("avatar_image_path")
-  emailValidated  Boolean? @default(false) @map("email_validated")
+  id                  Int     @id @default(autoincrement())
+  username            String  @unique
+  email               String  @unique
+  password            String
+  givenName           String? @map("given_name")
+  familyName          String? @map("family_name")
+  location            String?
+  website             String?
+  bio                 String?
+  avatarImagePath     String? @map("avatar_image_path")
+  favoriteThreeMovies Json?   @map("favorite_three_movies") // Maximum of 3 items allowed - must be validated at application level
 
-  refreshToken RefreshToken?
-  rating       Rating[]
-  ratingLike   RatingLike[]
-  followers    UserFollow[]  @relation("follower")
-  following    UserFollow[]  @relation("following")
-}
+  rating     Rating[]
+  ratingLike RatingLike[]
+  followers  UserFollow[] @relation("follower")
+  following  UserFollow[] @relation("following")
 
-model RefreshToken {
-  id        Int      @id @default(autoincrement())
-  expiresAt DateTime @map("expires_at")
-  issuedAt  DateTime @default(now()) @map("issued_at")
-  isValid   Boolean  @default(true) @map("is_valid")
-  userId    Int      @unique
-  forUser   User     @relation(fields: [userId], references: [id])
+  @@map("user")
 }
 
 // An instance of movie should only be created if an interaction exists
@@ -53,6 +45,8 @@ model Movie {
   year       Int
   duration   Int
   rating     Rating[]
+
+  @@map("movie")
 }
 
 model Rating {
@@ -62,29 +56,32 @@ model Rating {
   rating     Decimal
   commentary String?
 
-  toMovie    Movie        @relation(fields: [movieId], references: [id])
-  fromUser   User         @relation(fields: [userId], references: [id])
+  toMovie    Movie        @relation(fields: [movieId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  fromUser   User         @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   ratingLike RatingLike[]
 
-  @@unique([userId, movieId])
+  @@unique([userId, movieId]) // This will avoid rating duplications
+  @@map("rating")
 }
 
 model RatingLike {
   userId   Int @map("user_id")
   ratingId Int @map("rating_id")
 
-  user   User   @relation(fields: [userId], references: [id])
-  rating Rating @relation(fields: [ratingId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  rating Rating @relation(fields: [ratingId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@unique([userId, ratingId])
+  @@map("rating_like")
 }
 
 model UserFollow {
   followerId  Int @map("follower_id")
   followingId Int @map("following_id")
 
-  follower  User @relation("follower", fields: [followerId], references: [id])
-  following User @relation("following", fields: [followingId], references: [id])
+  follower  User @relation("follower", fields: [followerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@unique([followerId, followingId])
+  @@map("user_follow")
 }
