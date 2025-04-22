@@ -27,6 +27,34 @@ services:
         depends_on:
             - db
 
+    # REDIS cache for caching data in the server
+    cache:
+        image: redis
+        container_name: mov-e-cache
+        restart: always
+        command:
+            - redis-server
+            - --requirepass
+            - '${REDIS_CACHE_PASSWORD}'
+            - --databases
+            - '1'
+        ports:
+            - '6379:6379'
+
+    # REDIS store for session centralized session management
+    session-store:
+        image: redis
+        container_name: mov-e-session-store
+        restart: always
+        command:
+            - redis-server
+            - --requirepass
+            - '${REDIS_SESSION_PASSWORD}'
+            - --databases
+            - '1'
+        ports:
+            - '6380:6379'
+
     # Main application
     app:
         build:
@@ -35,6 +63,8 @@ services:
             target: development
         container_name: mov-e-api
         environment:
+            - REDIS_CACHE_URL=redis://:${REDIS_CACHE_PASSWORD}@mov-e-cache:6379/0
+            - REDIS_SESSION_URL=redis://:${REDIS_SESSION_PASSWORD}@mov-e-session-store:6379/0
             - DATABASE_URL=postgres://${DB_USER}:${DB_PWD}@mov-e-postgres-database:5432/${DB_DATABASE}
             - NODE_ENV=development
             - TMDB_API_KEY=${TMDB_API_KEY}

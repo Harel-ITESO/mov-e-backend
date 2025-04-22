@@ -7,6 +7,8 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import { EnvConfigService } from './services/env/env-config.service';
+import { RedisStore } from 'connect-redis';
+import { createClient } from 'redis';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -20,18 +22,30 @@ async function bootstrap() {
     app.setGlobalPrefix('v1/api');
 
     // Session management
+    const client = createClient({ url: process.env.REDIS_SESSION_URL });
+    await client.connect();
     app.use(
         session({
             secret: EnvConfigService.getCookieSecret(true),
             resave: false,
             saveUninitialized: false,
-            cookie: { maxAge: 864_000_000 },
+            cookie: {
+                maxAge: 864000000,
+                sameSite:
+                    process.env.NODE_ENV === 'development' ? false : 'none',
+                secure: process.env.NODE_ENV !== 'development',
+            },
+            store: new RedisStore({
+                client: client,
+                ttl: 864000000,
+            }),
         }),
     );
 
     app.use(passport.initialize());
     app.use(passport.session());
 
+    // Global pipes
     app.useGlobalPipes(
         new ValidationPipe({
             transform: true,
@@ -40,6 +54,7 @@ async function bootstrap() {
         }),
     ); // Validate DTOs received on controllers
 
+    // global filters
     app.useGlobalFilters(new PrismaClientExceptionFilter());
 
     await app.listen(8080);
