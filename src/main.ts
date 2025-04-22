@@ -2,9 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './filters/prisma-client-exception/prisma-client-exception.filter';
 import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
-import * as cookieParser from 'cookie-parser';
-import { EnvConfigService } from './services/env/env-config.service';
+
 import { NestExpressApplication } from '@nestjs/platform-express';
+import * as session from 'express-session';
+import * as passport from 'passport';
+import { EnvConfigService } from './services/env/env-config.service';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -17,7 +19,18 @@ async function bootstrap() {
 
     app.setGlobalPrefix('v1/api');
 
-    app.use(cookieParser(EnvConfigService.getCookieSecret())); // Parse cookies
+    // Session management
+    app.use(
+        session({
+            secret: EnvConfigService.getCookieSecret(true),
+            resave: false,
+            saveUninitialized: false,
+            cookie: { maxAge: 864_000_000 },
+        }),
+    );
+
+    app.use(passport.initialize());
+    app.use(passport.session());
 
     app.useGlobalPipes(
         new ValidationPipe({

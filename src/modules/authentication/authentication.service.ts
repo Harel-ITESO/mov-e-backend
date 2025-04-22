@@ -3,7 +3,6 @@ import { UserService } from '../user/user.service';
 import { CreateUserDto } from '../user/model/dto/create-user.dto';
 import { bcryptCompareHash, bcryptHashString } from 'src/util/hash';
 import { isEmail } from 'class-validator';
-import { SessionsService } from '../sessions/sessions.service';
 import { User } from '@prisma/client';
 import { EmailVerificationService } from '../email-verification/email-verification.service';
 import { JwtService } from '@nestjs/jwt';
@@ -12,7 +11,6 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthenticationService {
     constructor(
         private readonly userService: UserService,
-        private readonly sessionsService: SessionsService,
         private readonly emailVerificationService: EmailVerificationService,
         private readonly jwtService: JwtService,
     ) {}
@@ -93,32 +91,5 @@ export class AuthenticationService {
         const isPassword = await bcryptCompareHash(passwordHash, password);
         if (!isPassword) return null; // Passwords don't match
         return this.userService.filterPasswordFromUser(user);
-    }
-
-    /**
-     * Generates a session for a user
-     * @param userId The id of the user
-     * @param username The username of the user for quick access
-     * @param email The email of the user for quick access
-     * @returns The generated session
-     */
-    public async generateSession(
-        userId: number,
-        username: string,
-        email: string,
-    ) {
-        return await this.sessionsService.createSession(
-            userId,
-            username,
-            email,
-        );
-    }
-
-    /**
-     * Logs out from a session
-     * @param sessionId The ID of the session
-     */
-    public async logoutFromSession(sessionId: string) {
-        await this.sessionsService.deleteSession(sessionId);
     }
 }

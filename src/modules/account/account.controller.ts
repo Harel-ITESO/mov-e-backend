@@ -19,7 +19,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { SessionUser } from '../authentication/models/types/session-user';
 import { UpdateAccountDataDto } from './models/dto/update-account-data.dto';
 import { AddFavoriteMovieDto } from './models/dto/add-favorite-movie.dto';
-import { CurrentSessionUser } from '../sessions/session-user.decorator';
+import { CurrentSessionUser } from '../authentication/decorators/current-session-user.decorator';
 
 // v1/api/account
 @Controller('account')

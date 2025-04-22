@@ -68,7 +68,13 @@ export class EnvConfigService {
      * Get the cookie secret retrieved from environment variables
      * @returns The cookie secret
      */
-    static getCookieSecret() {
-        return process.env.COOKIE_SECRET;
+    static getCookieSecret(throwError?: boolean) {
+        const secret = process.env.COOKIE_SECRET;
+        if (throwError && !secret) {
+            throw new Error(
+                'Cookie secret was not found on enviroment variables',
+            );
+        }
+        return secret || '';
     }
 }
