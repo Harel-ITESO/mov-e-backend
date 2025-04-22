@@ -167,7 +167,8 @@ def create_enviroment_variables():
         "TMDB_API_KEY": tmdb_api_key or "required",
         "LOCAL_AWS_ENDPOINT": "http://localstack:4566",  # THIS IS DIFFERENT THAN localhost -- Because it's made for docker compose
         "COOKIE_SECRET": hashlib.sha256(b"unsafe-cookie-secret").hexdigest(),
-        "JWT_SECRET": hashlib.sha256(b"unsafe-jwt-secret").hexdigest(),
+        "EMAIL_VERIFICATION_JWT_SECRET": hashlib.sha256(b"unsafe-email-verification-jwt-secret").hexdigest(),
+        "RESET_PASSWORD_JWT_SECRET": hashlib.sha256(b"unsafe-reset-password-jwt-secret").hexdigest(),
         "EMAIL_SENDER": "noreply@move.com",
         "BUCKET_NAME": "file-storage",
         "AWS_ACCESS_KEY_ID": aws_credentials.get("access_key_id"),

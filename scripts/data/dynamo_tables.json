@@ -1,15 +1,15 @@
 [
     {
-        "TableName": "sessions",
+        "TableName": "password-resets",
         "AttributeDefinitions": [
             {
-                "AttributeName": "sessionId",
+                "AttributeName": "resetId",
                 "AttributeType": "S"
             }
         ],
         "KeySchema": [
             {
-                "AttributeName": "sessionId",
+                "AttributeName": "resetId",
                 "KeyType": "HASH"
             }
         ],

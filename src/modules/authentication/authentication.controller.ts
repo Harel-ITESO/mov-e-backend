@@ -3,7 +3,6 @@ import {
     Body,
     Controller,
     Delete,
-    Get,
     NotFoundException,
     Param,
     Post,
@@ -41,10 +40,12 @@ export class AuthenticationController {
     }
 
     // v1/api/authentication/register/verification/:verificationId
-    @Get('register/email/verification/:verificationId')
-    public async verifyEmail(@Param('verificationId') verificationId: string) {
+    @Post('register/email/verification/:verificationId')
+    public async processEmailVerification(
+        @Param('verificationId') verificationId: string,
+    ) {
         try {
-            return await this.authenticationService.verifyEmailRegistered(
+            return await this.authenticationService.processPendingEmailVerification(
                 verificationId,
             );
         } catch (e) {

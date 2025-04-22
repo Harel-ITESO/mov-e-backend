@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD as PROXY_GUARD } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_GUARD as PROXY_GUARD } from '@nestjs/core';
 import { PrismaService } from './services/prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
@@ -17,9 +17,20 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TmdbService } from './services/tmdb/tmdb.service';
 import ThrottleBehindProxy from './guards/throttler-behind-proxy.guard';
 import { HttpModule } from '@nestjs/axios';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { createKeyv } from '@keyv/redis';
 
 @Module({
     imports: [
+        CacheModule.registerAsync({
+            isGlobal: true,
+            useFactory: () => {
+                return {
+                    stores: [createKeyv(process.env.REDIS_CACHE_URL)],
+                    ttl: 86400000,
+                };
+            },
+        }),
         ConfigModule.forRoot({ isGlobal: true }),
         ThrottlerModule.forRoot({
             throttlers: [
@@ -59,6 +70,10 @@ import { HttpModule } from '@nestjs/axios';
         {
             provide: PROXY_GUARD,
             useClass: ThrottleBehindProxy,
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: CacheInterceptor, // Globally provide cache for each controller on GET requests
         },
         TmdbService,
     ],

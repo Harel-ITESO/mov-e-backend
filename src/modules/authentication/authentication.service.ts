@@ -51,7 +51,7 @@ export class AuthenticationService {
      * @param verificationId The id of the email for verification
      * @returns JWT if found
      */
-    public async verifyEmailRegistered(verificationId: string) {
+    public async processPendingEmailVerification(verificationId: string) {
         const verification =
             await this.emailVerificationService.findPendingVerification(
                 verificationId,
