@@ -14,7 +14,6 @@ export class EnvConfigService {
     public readonly AWS_REGION: string;
     public readonly AWS_ACCESS_KEY_ID: string;
     public readonly AWS_SECRET_ACCESS_KEY: string;
-    public readonly EMAIL_SENDER: string;
     public readonly TMDB_API_KEY: string;
     public readonly COOKIE_SECRET: string;
     public readonly LOCAL_AWS_ENDPOINT: string;
@@ -23,13 +22,14 @@ export class EnvConfigService {
     public readonly RESET_PASSWORD_JWT_SECRET: string;
     public readonly REDIS_SESSION_URL: string;
     public readonly REDIS_CACHE_URL: string;
+    public readonly SMTP_API_KEY: string;
+    public readonly SMTP_NAME: string;
+    public readonly SMTP_EMAIL: string;
 
     constructor(private readonly configService: ConfigService) {
         this.NODE_ENV = this.configService.getOrThrow<ENV>('NODE_ENV');
         this.DATABASE_URL =
             this.configService.getOrThrow<string>('DATABASE_URL');
-        this.EMAIL_SENDER =
-            this.configService.getOrThrow<string>('EMAIL_SENDER');
         this.TMDB_API_KEY =
             this.configService.getOrThrow<string>('TMDB_API_KEY');
         this.COOKIE_SECRET =
@@ -58,6 +58,9 @@ export class EnvConfigService {
             this.LOCAL_AWS_ENDPOINT =
                 this.configService.getOrThrow<string>('LOCAL_AWS_ENDPOINT');
         }
+        this.SMTP_API_KEY = this.configService.getOrThrow<string>('SMTP_API_KEY');
+        this.SMTP_NAME = this.configService.getOrThrow<string>('SMTP_NAME');
+        this.SMTP_EMAIL = this.configService.getOrThrow<string>('SMTP_EMAIL');
     }
 
     /**

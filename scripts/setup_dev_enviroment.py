@@ -152,6 +152,9 @@ def create_enviroment_variables():
     tmdb_api_key = input(
         "Enter your TMDB API Key (leave blank if you'll do it after): "
     )
+    smtp_api_key = input(
+        "Enter your SMTP API Key (leave blank if you'll do it after): "
+    )
     db_name = input("Enter Database Name: ")
     db_user = input("Enter Database Username: ")
     db_password = input("Enter Database Password: ")
@@ -174,7 +177,10 @@ def create_enviroment_variables():
         "AWS_ACCESS_KEY_ID": aws_credentials.get("access_key_id"),
         "AWS_SECRET_ACCESS_KEY": aws_credentials.get("secret_access_key"),
         "AWS_DEFAULT_REGION": "us-east-1",
-        "NODE_ENV": "development"
+        "NODE_ENV": "development",
+        "SMTP_API_KEY": smtp_api_key or "required",
+        "SMTP_NAME": "Mov-e",
+        "SMTP_EMAIL": "move.noreply0@gmail.com",
     }
 
     file_result = ""
