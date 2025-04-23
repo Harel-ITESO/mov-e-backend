@@ -1,5 +1,5 @@
 import { isURL } from 'class-validator';
-import { SendData } from 'src/services/aws/ses/models/types/send-data';
+import { SendData } from 'src/services/smtp/models/types/send-data';
 
 export abstract class EmailVerificationOptionsFactory {
     public static getEmailOptions(to: string[], verificationLink: string) {

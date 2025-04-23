@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DynamoService } from 'src/services/aws/dynamo/dynamo.service';
 import { DynamoTables } from 'src/services/aws/dynamo/tables';
-import { SesService } from 'src/services/aws/ses/ses.service';
+import { SmtpService } from 'src/services/smtp/smtp.service';
 import { EnvConfigService } from 'src/services/env/env-config.service';
 import { hashString } from 'src/util/hash';
 import { EmailVerification } from './models/email-verification';
@@ -14,7 +14,7 @@ export class EmailVerificationService {
 
     constructor(
         private readonly dynamoService: DynamoService,
-        private readonly sesService: SesService,
+        private readonly sesService: SmtpService,
         private readonly envConfigService: EnvConfigService,
     ) {}
 
@@ -42,7 +42,7 @@ export class EmailVerificationService {
             [email],
             `http://frontend.com/${verificationId}`,
         );
-        await this.sesService.sendEmail({
+        await this.sesService.sendEmails({
             ...emailOptions,
         });
         return { message: 'Email verification pending' };

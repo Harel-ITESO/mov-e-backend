@@ -58,7 +58,8 @@ export class EnvConfigService {
             this.LOCAL_AWS_ENDPOINT =
                 this.configService.getOrThrow<string>('LOCAL_AWS_ENDPOINT');
         }
-        this.SMTP_API_KEY = this.configService.getOrThrow<string>('SMTP_API_KEY');
+        this.SMTP_API_KEY =
+            this.configService.getOrThrow<string>('SMTP_API_KEY');
         this.SMTP_NAME = this.configService.getOrThrow<string>('SMTP_NAME');
         this.SMTP_EMAIL = this.configService.getOrThrow<string>('SMTP_EMAIL');
     }

@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
-import SibApiV3Sdk from 'sib-api-v3-sdk';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-require-imports */
+const SibApiV3Sdk = require('sib-api-v3-sdk');
 import { Injectable } from '@nestjs/common';
 import { EnvConfigService } from 'src/services/env/env-config.service';
 import { SendData } from './models/types/send-data';
 
 @Injectable()
-export class SesService {
+export class SmtpService {
     constructor(private readonly envConfigService: EnvConfigService) {
         const client = SibApiV3Sdk.ApiClient.instance;
         const apiKey = client.authentications['api-key'];
@@ -13,14 +13,10 @@ export class SesService {
     }
 
     /**
-     * Sends an email to the given email address
-     * @param to The email receiver
-     * @param subject The email subject
-     * @param html The HTML version of email body
-     * @param text The text version of email body
-     * @returns The promise of sending the email
+     * Send emails to different addresses
+     * @param data The configuration parameters to send the emails
      */
-    public async sendEmail(data: SendData) {
+    public async sendEmails(data: SendData) {
         const { toAddresses, subject, html, text } = data;
         const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
         const params = {
@@ -28,7 +24,7 @@ export class SesService {
                 name: this.envConfigService.SMTP_NAME,
                 email: this.envConfigService.SMTP_EMAIL,
             },
-            to: [{ email: toAddresses }],
+            to: toAddresses.map(email => ({ email })),
             subject,
             htmlContent: html,
             textContent: text,
