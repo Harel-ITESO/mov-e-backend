@@ -7,7 +7,7 @@
     "license": "UNLICENSED",
     "scripts": {
         "build": "nest build",
-        "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+        "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" && git add .",
         "start": "nest start",
         "start:dev": "nest start --watch",
         "start:debug": "nest start --debug --watch",
@@ -24,7 +24,6 @@
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.772.0",
         "@aws-sdk/client-s3": "^3.779.0",
-        "@aws-sdk/client-ses": "^3.772.0",
         "@keyv/redis": "^4.3.4",
         "@nestjs/axios": "^4.0.0",
         "@nestjs/cache-manager": "^3.0.1",
@@ -49,7 +48,8 @@
         "passport-jwt": "^4.0.1",
         "redis": "^4.7.0",
         "reflect-metadata": "^0.2.2",
-        "rxjs": "^7.8.1"
+        "rxjs": "^7.8.1",
+        "sib-api-v3-sdk": "^8.5.0"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.2.0",

@@ -8,7 +8,7 @@ import { MoviesModule } from './modules/movies/movies.module';
 import { DynamoService } from './services/aws/dynamo/dynamo.service';
 import { RatingsModule } from './modules/ratings/ratings.module';
 import { EnvConfigService } from './services/env/env-config.service';
-import { SesService } from './services/aws/ses/ses.service';
+import { SmtpService } from './services/smtp/smtp.service';
 import { EmailVerificationModule } from './modules/email-verification/email-verification.module';
 import { S3Service } from './services/aws/s3/s3.service';
 import { AccountModule } from './modules/account/account.module';
@@ -65,7 +65,7 @@ import { createKeyv } from '@keyv/redis';
         PrismaService,
         DynamoService,
         EnvConfigService,
-        SesService,
+        SmtpService,
         S3Service,
         {
             provide: PROXY_GUARD,
