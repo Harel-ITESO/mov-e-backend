@@ -24,7 +24,7 @@ export class SmtpService {
                 name: this.envConfigService.SMTP_NAME,
                 email: this.envConfigService.SMTP_EMAIL,
             },
-            to: toAddresses.map(email => ({ email })),
+            to: toAddresses.map((email) => ({ email })),
             subject,
             htmlContent: html,
             textContent: text,
