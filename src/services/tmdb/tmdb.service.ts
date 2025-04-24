@@ -75,8 +75,11 @@ export class TmdbService {
         const apiUrl = `${this.API_URL}/movie/popular`;
         const options = this.getBaseHttpOptions();
         const response = await firstValueFrom(
-            this.httpService.get<TmdbMovieSearch>(apiUrl, options),
+            this.httpService.get<{ results: TmdbMovieSearch[] }>(
+                apiUrl,
+                options,
+            ),
         );
-        return response.data;
+        return response.data.results;
     }
 }

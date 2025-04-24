@@ -77,17 +77,14 @@ export class UserService {
      * @param data The data to put
      * @returns The user with updated data
      */
-    public async updateUserData(
-        userId: number,
-        data: UpdateUserDto,
-    ): Promise<User> {
+    public async updateUserData(userId: number, data: UpdateUserDto) {
         const userUpdated = await this.prismaService.user.update({
             data,
             where: {
                 id: userId,
             },
         });
-        return userUpdated;
+        return this.filterPasswordFromUser(userUpdated);
     }
 
     /**
@@ -108,7 +105,7 @@ export class UserService {
                 id: userId,
             },
         });
-        return userUpdated;
+        return this.filterPasswordFromUser(userUpdated);
     }
 
     /**
@@ -119,7 +116,7 @@ export class UserService {
     async getRatingsByUser(userId: number) {
         const user = await this.prismaService.user.findUniqueOrThrow({
             include: {
-                rating: {
+                ratings: {
                     select: {
                         rating: true,
                         commentary: true,

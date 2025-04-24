@@ -26,10 +26,10 @@ model User {
   avatarImagePath     String? @map("avatar_image_path")
   favoriteThreeMovies Json?   @map("favorite_three_movies") // Maximum of 3 items allowed - must be validated at application level
 
-  rating     Rating[]
-  ratingLike RatingLike[]
-  followers  UserFollow[] @relation("follower")
-  following  UserFollow[] @relation("following")
+  ratings     Rating[]
+  ratingLikes RatingLike[]
+  followers   UserFollow[] @relation("follower")
+  following   UserFollow[] @relation("following")
 
   @@map("user")
 }
@@ -37,14 +37,14 @@ model User {
 // An instance of movie should only be created if an interaction exists
 model Movie {
   id         Int      @id @default(autoincrement())
-  tmdbId     Int      @map("tmdb_id")
+  tmdbId     Int      @unique @map("tmdb_id")
   title      String
   genres     Json
   overview   String
   posterPath String   @map("poster_path")
   year       Int
   duration   Int
-  rating     Rating[]
+  ratings    Rating[]
 
   @@map("movie")
 }
@@ -56,9 +56,9 @@ model Rating {
   rating     Decimal
   commentary String?
 
-  toMovie    Movie        @relation(fields: [movieId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  fromUser   User         @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  ratingLike RatingLike[]
+  toMovie     Movie        @relation(fields: [movieId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  fromUser    User         @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  ratingLikes RatingLike[]
 
   @@unique([userId, movieId]) // This will avoid rating duplications
   @@map("rating")

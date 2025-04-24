@@ -37,7 +37,10 @@ export class RatingsService {
      */
     public async createRating(userId: number, data: CreateRatingDto) {
         const movieInDatabase =
-            await this.moviesService.findMovieOnLocalDatabase(data.tmdbId);
+            await this.moviesService.findMovieOnLocalDatabase(
+                data.tmdbId,
+                false,
+            );
         let movieConnect: Movie | null;
 
         if (!movieInDatabase) {
