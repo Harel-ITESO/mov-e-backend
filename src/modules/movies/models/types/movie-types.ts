@@ -1,4 +1,4 @@
-import { Movie } from '@prisma/client';
+import { Prisma, Movie } from '@prisma/client';
 
 export type ApiMovieOverview = Omit<
     Movie,
@@ -6,3 +6,19 @@ export type ApiMovieOverview = Omit<
 >;
 
 export type ApiMovieDetail = Omit<Movie, 'id'>;
+
+export type MovieDetailWithRatingsCount = Prisma.MovieGetPayload<{
+    include: {
+        _count: {
+            select: {
+                ratings: true;
+            };
+        };
+    };
+}>;
+
+export type MovieDetailWithRatings = Prisma.MovieGetPayload<{
+    include: {
+        ratings: true;
+    };
+}>;

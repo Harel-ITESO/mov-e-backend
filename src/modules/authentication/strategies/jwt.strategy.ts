@@ -5,12 +5,12 @@ import { InternalServerErrorException } from '@nestjs/common';
 
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     constructor() {
-        const jwtSecret = process.env.JWT_SECRET;
+        const jwtSecret = process.env.EMAIL_VERIFICATION_JWT_SECRET;
         if (!jwtSecret)
             throw new InternalServerErrorException('JWT Secret not found');
 
         super({
-            secretOrKey: process.env.JWT_SECRET || '',
+            secretOrKey: jwtSecret,
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         });
     }

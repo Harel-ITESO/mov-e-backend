@@ -15,7 +15,7 @@ import { SessionSerializer } from './session.serializer';
         PassportModule.register({ session: true }),
         JwtModule.register({
             global: true,
-            secret: process.env.JWT_SECRET,
+            secret: process.env.EMAIL_VERIFICATION_JWT_SECRET,
             signOptions: {
                 expiresIn: '10m', // lasts only 10 minutes
             },

@@ -3,6 +3,7 @@ import {
     Body,
     Controller,
     Delete,
+    Get,
     NotFoundException,
     Param,
     Post,
@@ -26,6 +27,13 @@ export class AuthenticationController {
     constructor(
         private readonly authenticationService: AuthenticationService,
     ) {}
+
+    // v1/api/authentication/account/authenticated
+    @Get('/account/authenticated')
+    @UseGuards(SessionAuthGuard)
+    public getAccountIsAuthenticated() {
+        return { message: 'User is authenticated' };
+    }
 
     // v1/api/authentication/register/email
     @Post('register/email')

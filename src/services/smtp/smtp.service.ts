@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-require-imports */
-const SibApiV3Sdk = require('sib-api-v3-sdk');
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+import * as sibApiV3Sdk from 'sib-api-v3-sdk';
 import { Injectable } from '@nestjs/common';
 import { EnvConfigService } from 'src/services/env/env-config.service';
 import { SendData } from './models/types/send-data';
@@ -7,7 +7,7 @@ import { SendData } from './models/types/send-data';
 @Injectable()
 export class SmtpService {
     constructor(private readonly envConfigService: EnvConfigService) {
-        const client = SibApiV3Sdk.ApiClient.instance;
+        const client = sibApiV3Sdk.ApiClient.instance;
         const apiKey = client.authentications['api-key'];
         apiKey.apiKey = envConfigService.SMTP_API_KEY;
     }
@@ -18,7 +18,7 @@ export class SmtpService {
      */
     public async sendEmails(data: SendData) {
         const { toAddresses, subject, html, text } = data;
-        const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+        const apiInstance = new sibApiV3Sdk.TransactionalEmailsApi();
         const params = {
             sender: {
                 name: this.envConfigService.SMTP_NAME,

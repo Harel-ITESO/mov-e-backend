@@ -3,6 +3,7 @@ import { TmdbMovieSearch } from 'src/services/tmdb/tmdb-movie-search';
 import { ApiMovieDetail, ApiMovieOverview } from './models/types/movie-types';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { Movie } from '@prisma/client';
+import { RawQueryResult } from './models/types/raw-query';
 
 export abstract class MovieParser {
     /**
@@ -73,9 +74,32 @@ export abstract class MovieParser {
      * @param movieData
      * @returns Parsed data
      */
-    public static parseFromDatabase(movieData: Movie): ApiMovieDetail {
+    public static parseFromDatabase(movieData: Movie) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id, ...rest } = movieData;
         return rest;
+    }
+
+    /**
+     * Parses from a raw query results (The raw query result gets the data from the database directly with joins)
+     * @param rawQueryResult
+     * @returns
+     */
+    public static parseFromRawQueryResult(rawQueryResult: RawQueryResult) {
+        const {
+            tmdb_id,
+            average_ratings,
+            ratings_count,
+            poster_path,
+            ...rest
+        } = rawQueryResult;
+
+        return {
+            tmdbId: tmdb_id,
+            averageRatings: parseFloat(average_ratings),
+            ratingsCount: ratings_count,
+            posterPath: poster_path,
+            ...rest,
+        };
     }
 }

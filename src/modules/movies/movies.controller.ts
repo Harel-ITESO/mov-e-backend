@@ -3,16 +3,17 @@ import {
     Get,
     NotFoundException,
     Param,
+    Query,
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { SessionAuthGuard } from '../authentication/guards/session-auth.guard';
-import { CacheInterceptor } from '@nestjs/cache-manager';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('movies')
-@UseInterceptors(CacheInterceptor) // cache all requests
 @UseGuards(SessionAuthGuard)
+@UseInterceptors(CacheInterceptor)
 export class MoviesController {
     constructor(private readonly moviesService: MoviesService) {}
 
@@ -22,10 +23,24 @@ export class MoviesController {
         return await this.moviesService.searchMoviesByTitle(title);
     }
 
-    @Get('movie/detail/:id')
-    public async getMovieDetailById(@Param('id') id: number) {
-        const detail = await this.moviesService.getMovieDetail(id);
+    // v1/api/movies/movie/detail/:id
+    @Get('movie/:id/detail')
+    @CacheTTL(300) // cache it just for 5 minutes
+    public async getMovieDetailById(
+        @Param('id') id: number,
+        @Query('ratings_info') ratingsInfo?: boolean,
+    ) {
+        const detail = await this.moviesService.getMovieDetail(
+            id,
+            ratingsInfo || false,
+        );
         if (!detail) throw new NotFoundException('Movie not found');
         return detail;
+    }
+
+    // v1/api/movies/popular
+    @Get('popular')
+    public async getPopularMovies() {
+        return await this.moviesService.getAllPopularMovies();
     }
 }
