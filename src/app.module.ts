@@ -19,6 +19,8 @@ import ThrottleBehindProxy from './guards/throttler-behind-proxy.guard';
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv } from '@keyv/redis';
+import { FollowsModule } from './modules/follows/follows.module';
+import { ProfilesModule } from './modules/profiles/profiles.module';
 
 @Module({
     imports: [
@@ -59,6 +61,8 @@ import { createKeyv } from '@keyv/redis';
         AccountModule,
         FilesModule,
         HttpModule,
+        FollowsModule,
+        ProfilesModule,
     ],
     controllers: [],
     providers: [

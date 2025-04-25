@@ -7,6 +7,7 @@ import { JsonArray } from '@prisma/client/runtime/library';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { UserWithoutPassword } from '../user/model/types/user-without-password';
+import { CachePrefixes } from 'src/util/cache-prefixes';
 
 @Injectable()
 export class AccountService {
@@ -26,7 +27,10 @@ export class AccountService {
         userId: number,
         data: UserWithoutPassword,
     ) {
-        return await this.cacheManager.set(`user-${userId}-profile`, data);
+        return await this.cacheManager.set(
+            `${CachePrefixes.AccountIdentifierCached}-${userId}-profile`,
+            data,
+        );
     }
 
     /**
@@ -97,7 +101,12 @@ export class AccountService {
         // no movies yet
         if (!favoriteMovies) {
             const toAdd = [{ ...data.favoriteMovie }];
-            await this.usersService.updateFavoriteMoviesArray(userId, toAdd);
+            const updatedUser =
+                await this.usersService.updateFavoriteMoviesArray(
+                    userId,
+                    toAdd,
+                );
+            await this.udpateProfileCache(userId, updatedUser!);
             return toAdd;
         }
 

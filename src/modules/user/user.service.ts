@@ -29,9 +29,24 @@ export class UserService {
      * @returns The user if found or `null`
      */
     public async getUserById(userId: number, filterPassword?: boolean) {
-        const user = await this.prismaService.user.findFirstOrThrow({
+        const user = await this.prismaService.user.findUniqueOrThrow({
             where: {
                 id: userId,
+            },
+        });
+        if (filterPassword) return this.filterPasswordFromUser(user);
+        return user;
+    }
+
+    /**
+     * Find a user by his username (indexed field)
+     * @param username
+     * @returns The user if found or `null`
+     */
+    public async getUserByUsername(username: string, filterPassword?: boolean) {
+        const user = await this.prismaService.user.findUniqueOrThrow({
+            where: {
+                username,
             },
         });
         if (filterPassword) return this.filterPasswordFromUser(user);
@@ -47,7 +62,7 @@ export class UserService {
         whereClause: Prisma.UserWhereUniqueInput,
         filterPassword?: boolean,
     ) {
-        const user = await this.prismaService.user.findFirstOrThrow({
+        const user = await this.prismaService.user.findUniqueOrThrow({
             where: whereClause,
         });
         if (filterPassword) return this.filterPasswordFromUser(user);
@@ -113,7 +128,7 @@ export class UserService {
      * @param userId The user id
      * @returns The ratings found
      */
-    async getRatingsByUser(userId: number) {
+    public async getRatingsByUser(userId: number) {
         const user = await this.prismaService.user.findUniqueOrThrow({
             include: {
                 ratings: {
@@ -135,5 +150,37 @@ export class UserService {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...rest } = user;
         return rest;
+    }
+
+    /**
+     * Retrieves all the followings of user
+     * @param userId
+     * @returns
+     */
+    public async getUserFollowings(userId: number) {
+        const baseUser = await this.prismaService.user.findUniqueOrThrow({
+            include: {
+                following: {
+                    include: {
+                        following: {
+                            select: {
+                                id: true,
+                                avatarImagePath: true,
+                                username: true,
+                            },
+                        },
+                    },
+                },
+            },
+            where: {
+                id: userId,
+            },
+        });
+        const following = baseUser.following.map<{
+            id: number;
+            username: string;
+            avatarImagePath: string | null;
+        }>((follower) => follower.following);
+        return { ...this.filterPasswordFromUser(baseUser), following };
     }
 }
