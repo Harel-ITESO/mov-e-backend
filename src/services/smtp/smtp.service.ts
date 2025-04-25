@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import * as sibApiV3Sdk from 'sib-api-v3-sdk';
 import { Injectable } from '@nestjs/common';
 import { EnvConfigService } from 'src/services/env/env-config.service';
