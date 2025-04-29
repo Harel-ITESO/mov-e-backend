@@ -77,6 +77,7 @@ services:
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
             - AWS_REGION=${AWS_DEFAULT_REGION}
+            - FRONTEND_HOST=${FRONTEND_HOST}
         ports:
             - '8080:8080' # Expose the application port
         command: npm run start:dev # Fixed command to use 'run'

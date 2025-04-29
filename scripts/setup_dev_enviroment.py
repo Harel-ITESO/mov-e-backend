@@ -155,6 +155,9 @@ def create_enviroment_variables():
     smtp_api_key = input(
         "Enter your SMTP API Key (leave blank if you'll do it after): "
     )
+    frontend_host = input(
+        "Enter your frontend host (e.g 'http://localhost:3000', 'https://frontend', 'https://mov-e'), if blank, defaults to 'http://localhost:3000'"
+    )
     db_name = input("Enter Database Name: ")
     db_user = input("Enter Database Username: ")
     db_password = input("Enter Database Password: ")
@@ -181,6 +184,7 @@ def create_enviroment_variables():
         "SMTP_API_KEY": smtp_api_key or "required",
         "SMTP_NAME": "Mov-e",
         "SMTP_EMAIL": "move.noreply0@gmail.com",
+        "FRONTEND_HOST": frontend_host or "http://localhost:3000"
     }
 
     file_result = ""
