@@ -1,10 +1,7 @@
-import { isURL } from 'class-validator';
 import { SendData } from 'src/services/smtp/models/types/send-data';
 
 export abstract class EmailVerificationOptionsFactory {
     public static getEmailOptions(to: string[], verificationLink: string) {
-        if (!isURL(verificationLink))
-            throw new Error('Verification link must be an error');
         return {
             toAddresses: [...to],
             subject: 'Verify you E-mail on Mov-E',

@@ -25,6 +25,7 @@ export class EnvConfigService {
     public readonly SMTP_API_KEY: string;
     public readonly SMTP_NAME: string;
     public readonly SMTP_EMAIL: string;
+    public readonly FRONTEND_HOST: string;
 
     constructor(private readonly configService: ConfigService) {
         this.NODE_ENV = this.configService.getOrThrow<ENV>('NODE_ENV');
@@ -62,6 +63,8 @@ export class EnvConfigService {
             this.configService.getOrThrow<string>('SMTP_API_KEY');
         this.SMTP_NAME = this.configService.getOrThrow<string>('SMTP_NAME');
         this.SMTP_EMAIL = this.configService.getOrThrow<string>('SMTP_EMAIL');
+        this.FRONTEND_HOST =
+            this.configService.getOrThrow<string>('FRONTEND_HOST');
     }
 
     /**

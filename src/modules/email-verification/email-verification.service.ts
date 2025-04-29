@@ -40,7 +40,7 @@ export class EmailVerificationService {
         // TODO: Change this to use valid hyperlinks
         const emailOptions = EmailVerificationOptionsFactory.getEmailOptions(
             [email],
-            `http://frontend.com/${verificationId}`,
+            `${this.envConfigService.FRONTEND_HOST}/authentication/pending-email/${verificationId}`,
         );
         await this.sesService.sendEmails({
             ...emailOptions,
