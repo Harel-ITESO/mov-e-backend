@@ -17,6 +17,8 @@ async function bootstrap() {
         }),
     });
 
+    app.enableCors({ origin: '*' });
+
     app.set('trust proxy', 1); // This only works in prod btw... Trusts the proxy IP from each request
 
     app.setGlobalPrefix('v1/api');
@@ -32,9 +34,8 @@ async function bootstrap() {
             cookie: {
                 httpOnly: true,
                 maxAge: 864000000,
-                sameSite:
-                    process.env.NODE_ENV === 'development' ? false : 'none',
-                secure: process.env.NODE_ENV !== 'development',
+                sameSite: false,
+                secure: false,
             },
             store: new RedisStore({
                 client: client,
