@@ -17,7 +17,9 @@ async function bootstrap() {
         }),
     });
 
-    app.enableCors({ origin: '*' });
+    // allow all incoming requests with credentials
+    // (Since server is behing proxy, ALB should handle CORS)
+    app.enableCors({ origin: true, credentials: true });
 
     app.set('trust proxy', 1); // This only works in prod btw... Trusts the proxy IP from each request
 
