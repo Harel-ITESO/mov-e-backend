@@ -17,7 +17,7 @@ async function bootstrap() {
         }),
     });
 
-    // allow all incomming request with credentials
+    // allow all incoming requests with credentials
     // (Since server is behing proxy, ALB should handle CORS)
     app.enableCors({ origin: true, credentials: true });
 
