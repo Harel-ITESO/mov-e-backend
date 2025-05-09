@@ -8,6 +8,7 @@ import { Cache } from 'cache-manager';
 import { RatingsByMovie } from './model/types/ratings-by-movie';
 import { CachePrefixes } from 'src/util/cache-prefixes';
 import { RatingDetail } from './model/types/rating-detail';
+import { RatingsByAccount } from '../account/models/interfaces/ratings-by-account';
 
 @Injectable()
 export class RatingsService {
@@ -170,10 +171,25 @@ export class RatingsService {
         });
 
         // update cache
-        const key = `${CachePrefixes.RatingsByMovieCached}-${data.tmdbId}`;
-        const cachedData =
-            ((await this.cacheManager.get(key)) as RatingsByMovie[]) || [];
-        await this.cacheManager.set(key, [...cachedData, ratingCreated]);
+        const ratingByMovieKey = `${CachePrefixes.RatingsByMovieCached}-${data.tmdbId}`;
+        const ratingByMovieCachedData =
+            ((await this.cacheManager.get(
+                ratingByMovieKey,
+            )) as RatingsByMovie[]) || [];
+        await this.cacheManager.set(ratingByMovieKey, [
+            ...ratingByMovieCachedData,
+            ratingCreated,
+        ]);
+
+        // update accounts by rating cache
+        const accountKey = `${CachePrefixes.AccountIdentifierCached}-${userId}-ratings`;
+        const accountCachedData =
+            ((await this.cacheManager.get(accountKey)) as RatingsByAccount[]) ||
+            [];
+        await this.cacheManager.set(accountKey, [
+            ...accountCachedData,
+            ratingCreated,
+        ]);
 
         return ratingCreated;
     }
@@ -201,6 +217,9 @@ export class RatingsService {
 
         // remove entire cached ratings to movie
         // this will allow for a clean repopulation of cache on next get request
+        await this.cacheManager.del(
+            `${CachePrefixes.AccountIdentifierCached}-${userId}-ratings`,
+        );
         await this.cacheManager.del(
             `${CachePrefixes.RatingsByMovieCached}-${deleted.toMovie.tmdbId}`,
         );
