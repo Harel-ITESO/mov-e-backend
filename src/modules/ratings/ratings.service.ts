@@ -172,11 +172,24 @@ export class RatingsService {
 
         // update cache
         const ratingByMovieKey = `${CachePrefixes.RatingsByMovieCached}-${data.tmdbId}`;
-        await this.updateCache<RatingsByMovie>(ratingByMovieKey, ratingCreated);
+        const ratingByMovieCachedData =
+            ((await this.cacheManager.get(
+                ratingByMovieKey,
+            )) as RatingsByMovie[]) || [];
+        await this.cacheManager.set(ratingByMovieKey, [
+            ...ratingByMovieCachedData,
+            ratingCreated,
+        ]);
 
         // update accounts by rating cache
         const accountKey = `${CachePrefixes.AccountIdentifierCached}-${userId}-ratings`;
-        await this.updateCache<RatingsByAccount>(accountKey, ratingCreated);
+        const accountCachedData =
+            ((await this.cacheManager.get(accountKey)) as RatingsByAccount[]) ||
+            [];
+        await this.cacheManager.set(accountKey, [
+            ...accountCachedData,
+            ratingCreated,
+        ]);
 
         return ratingCreated;
     }
