@@ -9,6 +9,7 @@ import * as passport from 'passport';
 import { EnvConfigService } from './services/env/env-config.service';
 import { RedisStore } from 'connect-redis';
 import { createClient } from 'redis';
+import { InvalidSessionInterceptor } from './interceptors/invalid-session.intercetptor';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -46,6 +47,8 @@ async function bootstrap() {
             }),
         }),
     );
+
+    app.useGlobalInterceptors(new InvalidSessionInterceptor());
 
     app.use(passport.initialize());
     app.use(passport.session());
