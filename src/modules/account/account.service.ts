@@ -1,37 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { FilesService } from '../files/files.service';
 import { UpdateAccountDataDto } from './models/dto/update-account-data.dto';
 import { AddFavoriteMovieDto } from './models/dto/add-favorite-movie.dto';
 import { JsonArray } from '@prisma/client/runtime/library';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
-import { UserWithoutPassword } from '../user/model/types/user-without-password';
-import { CachePrefixes } from 'src/util/cache-prefixes';
 
 @Injectable()
 export class AccountService {
     constructor(
         private readonly usersService: UserService,
         private readonly filesService: FilesService,
-        @Inject(CACHE_MANAGER) private cacheManager: Cache,
     ) {}
-
-    /**
-     * Updates the profile cache, this allows for non stale data on store while leveraging the power of cache
-     * @param userId The userId to map to cache
-     * @param data The data of the user
-     * @returns Cached response
-     */
-    private async udpateProfileCache(
-        userId: number,
-        data: UserWithoutPassword,
-    ) {
-        return await this.cacheManager.set(
-            `${CachePrefixes.AccountIdentifierCached}-${userId}-profile`,
-            data,
-        );
-    }
 
     /**
      * Gets the summary of an account
@@ -61,10 +40,9 @@ export class AccountService {
             profilePicture,
             fileName,
         );
-        const userUpdated = await this.usersService.updateUserData(userId, {
+        await this.usersService.updateUserData(userId, {
             avatarImagePath: endpoint,
         });
-        await this.udpateProfileCache(userId, userUpdated!);
         return endpoint;
     }
 
@@ -82,7 +60,6 @@ export class AccountService {
             userId,
             updateData,
         );
-        await this.udpateProfileCache(userId, userUpdated!);
         return userUpdated;
     }
 
@@ -101,12 +78,8 @@ export class AccountService {
         // no movies yet
         if (!favoriteMovies) {
             const toAdd = [{ ...data.favoriteMovie }];
-            const updatedUser =
-                await this.usersService.updateFavoriteMoviesArray(
-                    userId,
-                    toAdd,
-                );
-            await this.udpateProfileCache(userId, updatedUser!);
+
+            await this.usersService.updateFavoriteMoviesArray(userId, toAdd);
             return toAdd;
         }
 
@@ -116,11 +89,7 @@ export class AccountService {
         }
 
         const toAdd = [{ ...data.favoriteMovie }, ...favoriteMovies]; // copy the array
-        const updatedUser = await this.usersService.updateFavoriteMoviesArray(
-            userId,
-            toAdd,
-        );
-        await this.udpateProfileCache(userId, updatedUser!);
+        await this.usersService.updateFavoriteMoviesArray(userId, toAdd);
         return toAdd;
     }
 
@@ -143,11 +112,10 @@ export class AccountService {
             throw new Error('Invalid array position');
 
         favoriteMovies.splice(arrayPosition, 1);
-        const updatedUser = await this.usersService.updateFavoriteMoviesArray(
+        await this.usersService.updateFavoriteMoviesArray(
             userId,
             favoriteMovies,
         );
-        await this.udpateProfileCache(userId, updatedUser!);
         return { message: 'Favorite movie removed' };
     }
 
