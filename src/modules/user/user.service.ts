@@ -133,6 +133,7 @@ export class UserService {
             include: {
                 ratings: {
                     select: {
+                        id: true,
                         rating: true,
                         commentary: true,
                         toMovie: {
