@@ -218,9 +218,6 @@ export class RatingsService {
         // remove entire cached ratings to movie
         // this will allow for a clean repopulation of cache on next get request
         await this.cacheManager.del(
-            `${CachePrefixes.AccountIdentifierCached}-${userId}-ratings`,
-        );
-        await this.cacheManager.del(
             `${CachePrefixes.RatingsByMovieCached}-${deleted.toMovie.tmdbId}`,
         );
         await this.cacheManager.del(

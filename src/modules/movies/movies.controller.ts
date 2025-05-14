@@ -25,7 +25,7 @@ export class MoviesController {
 
     // v1/api/movies/movie/detail/:id
     @Get('movie/:id/detail')
-    @CacheTTL(300) // cache it just for 5 minutes
+    @CacheTTL(10000) // cache it just for 10 seconds
     public async getMovieDetailById(
         @Param('id') id: number,
         @Query('ratings_info') ratingsInfo?: boolean,

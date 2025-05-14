@@ -20,12 +20,10 @@ import { SessionUser } from '../authentication/models/types/session-user';
 import { UpdateAccountDataDto } from './models/dto/update-account-data.dto';
 import { AddFavoriteMovieDto } from './models/dto/add-favorite-movie.dto';
 import { CurrentSessionUser } from '../authentication/decorators/current-session-user.decorator';
-import { AccountCacheInterceptor } from './interceptors/account-cache.interceptor';
 
 // v1/api/account
 @Controller('account')
 @UseGuards(SessionAuthGuard)
-@UseInterceptors(AccountCacheInterceptor) // cache all GET requests
 export class AccountController {
     constructor(private readonly accountService: AccountService) {}
 
