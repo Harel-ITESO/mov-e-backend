@@ -36,11 +36,11 @@ import { ProfilesModule } from './modules/profiles/profiles.module';
         ConfigModule.forRoot({ isGlobal: true }),
         ThrottlerModule.forRoot({
             throttlers: [
-                {
-                    name: 'short',
-                    ttl: 1000,
-                    limit: 3,
-                },
+                // {
+                //     name: 'short',
+                //     ttl: 1000,
+                //     limit: 3,
+                // },
                 {
                     name: 'medium',
                     ttl: 10000,
