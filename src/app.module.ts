@@ -21,6 +21,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv } from '@keyv/redis';
 import { FollowsModule } from './modules/follows/follows.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
+import { AppController } from './app.controller';
 
 @Module({
     imports: [
@@ -64,7 +65,7 @@ import { ProfilesModule } from './modules/profiles/profiles.module';
         FollowsModule,
         ProfilesModule,
     ],
-    controllers: [],
+    controllers: [AppController],
     providers: [
         PrismaService,
         DynamoService,
