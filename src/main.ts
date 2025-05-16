@@ -29,10 +29,10 @@ async function bootstrap() {
     // Session management
     const client = createClient({
         url: process.env.REDIS_SESSION_URL,
-        socket: {
-            tls: process.env.NODE_ENV === 'production',
-            rejectUnauthorized: process.env.NODE_ENV === 'production',
-        },
+        // socket: {
+        //     tls: process.env.NODE_ENV === 'production',
+        //     rejectUnauthorized: process.env.NODE_ENV === 'production',
+        // },
     });
     await client.connect();
     app.use(
