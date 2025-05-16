@@ -53,7 +53,7 @@ async function bootstrap() {
                 httpOnly: true,
                 maxAge: 864000000,
                 sameSite:
-                    process.env.NODE_ENV === 'development' ? false : 'lax',
+                    process.env.NODE_ENV === 'production' ? 'none' : 'lax',
                 secure: process.env.NODE_ENV === 'production',
             },
         }),
