@@ -12,7 +12,7 @@ import { createClient } from 'redis';
 import { InvalidSessionInterceptor } from './interceptors/invalid-session.intercetptor';
 import Redis from 'ioredis';
 
-function getRedisCacheSolution(env: string) {
+async function getRedisCacheSolution(env: string) {
     if (env === 'production') {
         return new Redis.Cluster(
             [{ host: process.env.REDIS_SESSION_URL, port: 6379 }],
@@ -25,9 +25,11 @@ function getRedisCacheSolution(env: string) {
         );
     }
 
-    return createClient({
+    const client = createClient({
         url: process.env.REDIS_SESSION_URL,
     });
+    await client.connect();
+    return client;
 }
 
 async function bootstrap() {
@@ -48,7 +50,6 @@ async function bootstrap() {
     // Session management
     const client = getRedisCacheSolution(process.env.NODE_ENV || 'development');
 
-    await client.connect();
     app.use(
         session({
             secret: EnvConfigService.getCookieSecret(true),
