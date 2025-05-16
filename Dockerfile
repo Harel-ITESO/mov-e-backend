@@ -34,7 +34,9 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install --production --ignore-scripts
+ENV HUSKY_SKIP_INSTALL=1
+
+RUN npm install --production
 
 COPY --from=build /usr/src/app/prisma ./prisma
 
