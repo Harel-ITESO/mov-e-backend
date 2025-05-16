@@ -35,7 +35,7 @@ env:
     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY_NAME  }} # set this to your Amazon ECR repository name
-    AWS_SESSION_TOKEN: ${{secrets.AWS_SESSION_TOKEN}}
+    # AWS_SESSION_TOKEN: ${{secrets.AWS_SESSION_TOKEN}}
     ECS_SERVICE: ${{ secrets.ECS_SERVICE }} # set this to your Amazon ECS service name
     ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }} # set this to your Amazon ECS cluster name
     CONTAINER_NAME: ${{ secrets.ECS_CONTAINER_NAME }} # set this to the name of the container in the containerDefinitions
@@ -61,7 +61,7 @@ jobs:
               with:
                   aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
                   aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-                  aws-session-token: ${{env.AWS_SESSION_TOKEN}}
+                  # aws-session-token: ${{env.AWS_SESSION_TOKEN}}
                   aws-region: ${{ env.AWS_REGION }}
 
             - name: Login to Amazon ECR
