@@ -47,9 +47,8 @@ export class EnvConfigService {
             this.configService.getOrThrow<string>('REDIS_SESSION_URL');
         this.REDIS_CACHE_URL =
             this.configService.getOrThrow<string>('REDIS_CACHE_URL');
-        if (this.NODE_ENV == ENV.PRODUCTION) {
-            this.AWS_REGION =
-                this.configService.getOrThrow<string>('AWS_REGION');
+        this.AWS_REGION = this.configService.getOrThrow<string>('AWS_REGION');
+        if (this.NODE_ENV == ENV.DEVELOPMENT) {
             this.AWS_ACCESS_KEY_ID =
                 this.configService.getOrThrow<string>('AWS_ACCESS_KEY_ID');
             this.AWS_SECRET_ACCESS_KEY = this.configService.getOrThrow<string>(
