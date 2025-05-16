@@ -31,6 +31,7 @@ export class MoviesService {
      */
     public async getAllPopularMovies() {
         const data = await this.tmdbService.getPopularMovies();
+        this.logger.log(data);
         return data.map((movie) => MovieParser.parseFromTmdb('search', movie));
     }
 
