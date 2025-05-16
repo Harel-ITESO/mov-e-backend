@@ -27,7 +27,13 @@ async function bootstrap() {
     app.setGlobalPrefix('v1/api');
 
     // Session management
-    const client = createClient({ url: process.env.REDIS_SESSION_URL });
+    const client = createClient({
+        url: process.env.REDIS_SESSION_URL,
+        socket: {
+            tls: true,
+            rejectUnauthorized: true,
+        },
+    });
     await client.connect();
     app.use(
         session({
