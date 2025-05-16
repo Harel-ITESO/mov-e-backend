@@ -7,28 +7,26 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import { EnvConfigService } from './services/env/env-config.service';
-import { RedisStore } from 'connect-redis';
-import { createClient } from 'redis';
 import { InvalidSessionInterceptor } from './interceptors/invalid-session.intercetptor';
 
-function getRedisCacheSolution(env: string) {
-    // if (env === 'production') {
-    //     const sessionUrl = process.env.REDIS_SESSION_URL;
-    //     console.log(sessionUrl);
-    //     return new Redis.Cluster([{ host: sessionUrl, port: 6379 }], {
-    //         dnsLookup: (address, callback) => callback(null, address),
-    //         redisOptions: {
-    //             tls: {},
-    //         },
-    //     });
-    // }
-    console.log(env);
+// function getRedisCacheSolution(env: string) {
+//     // if (env === 'production') {
+//     //     const sessionUrl = process.env.REDIS_SESSION_URL;
+//     //     console.log(sessionUrl);
+//     //     return new Redis.Cluster([{ host: sessionUrl, port: 6379 }], {
+//     //         dnsLookup: (address, callback) => callback(null, address),
+//     //         redisOptions: {
+//     //             tls: {},
+//     //         },
+//     //     });
+//     // }
+//     console.log(env);
 
-    const client = createClient({
-        url: process.env.REDIS_SESSION_URL,
-    });
-    return client;
-}
+//     const client = createClient({
+//         url: process.env.REDIS_SESSION_URL,
+//     });
+//     return client;
+// }
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -46,10 +44,6 @@ async function bootstrap() {
     app.setGlobalPrefix('v1/api');
 
     // Session management
-    const client = getRedisCacheSolution(process.env.NODE_ENV || 'development');
-
-    await client.connect();
-
     app.use(
         session({
             secret: EnvConfigService.getCookieSecret(true),
@@ -62,10 +56,6 @@ async function bootstrap() {
                     process.env.NODE_ENV === 'development' ? false : 'lax',
                 secure: process.env.NODE_ENV === 'production',
             },
-            store: new RedisStore({
-                client: client,
-                ttl: 864000000,
-            }),
         }),
     );
 
