@@ -1,0 +1,89 @@
+# The goal of this compose file is to help in the managing and setup of a local development enviroment
+# The docker compose file is not expected to be used in production, AWS ECS will be used as an orchestrator instead
+
+services:
+    # Database service
+    db:
+        image: postgres
+        restart: always
+        environment:
+            - POSTGRES_PASSWORD=${DB_PWD}
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_DB=${DB_DATABASE}
+        container_name: mov-e-postgres-database
+        ports:
+            - '5432:5432'
+    # AWS Services on local enviroment
+    localstack:
+        image: localstack/localstack
+        container_name: mov-e-aws-services
+        ports:
+            - '4566:4566'
+        environment:
+            - SERVICES=s3,ses,dynamodb # add your AWS service here if you need it
+            - DEFAULT_REGION=us-east-1
+            - AWS_DEFAULT_REGION=us-east-1
+            - AWS_REGION=us-east-1
+        depends_on:
+            - db
+
+    # REDIS cache for caching data in the server
+    cache:
+        image: redis
+        container_name: mov-e-cache
+        restart: always
+        command:
+            - redis-server
+            - --requirepass
+            - '${REDIS_CACHE_PASSWORD}'
+            - --databases
+            - '1'
+        ports:
+            - '6379:6379'
+
+    # REDIS store for session centralized session management
+    session-store:
+        image: redis
+        container_name: mov-e-session-store
+        restart: always
+        command:
+            - redis-server
+            - --requirepass
+            - '${REDIS_SESSION_PASSWORD}'
+            - --databases
+            - '1'
+        ports:
+            - '6380:6379'
+
+    # Main application
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: development
+        container_name: mov-e-api
+        environment:
+            - REDIS_CACHE_URL=redis://:${REDIS_CACHE_PASSWORD}@mov-e-cache:6379/0
+            - REDIS_SESSION_URL=redis://:${REDIS_SESSION_PASSWORD}@mov-e-session-store:6379/0
+            - DATABASE_URL=postgres://${DB_USER}:${DB_PWD}@mov-e-postgres-database:5432/${DB_DATABASE}
+            - NODE_ENV=development
+            - TMDB_API_KEY=${TMDB_API_KEY}
+            - LOCAL_AWS_ENDPOINT=${LOCAL_AWS_ENDPOINT}
+            - COOKIE_SECRET=${COOKIE_SECRET}
+            - RESET_PASSWORD_JWT_SECRET=${RESET_PASSWORD_JWT_SECRET}
+            - EMAIL_VERIFICATION_JWT_SECRET=${EMAIL_VERIFICATION_JWT_SECRET}
+            - EMAIL_SENDER=${EMAIL_SENDER}
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+            - AWS_REGION=${AWS_DEFAULT_REGION}
+            - FRONTEND_HOST=${FRONTEND_HOST}
+        ports:
+            - '8080:8080' # Expose the application port
+        command: npm run start:dev # Fixed command to use 'run'
+        volumes:
+            - ./:/usr/src/app
+            - /usr/src/app/node_modules
+
+        depends_on:
+            - localstack

@@ -1,0 +1,40 @@
+[
+    {
+        "TableName": "password-resets",
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "resetId",
+                "AttributeType": "S"
+            }
+        ],
+        "KeySchema": [
+            {
+                "AttributeName": "resetId",
+                "KeyType": "HASH"
+            }
+        ],
+        "ProvisionedThroughput": {
+            "ReadCapacityUnits": 1,
+            "WriteCapacityUnits": 1
+        }
+    },
+    {
+        "TableName": "email-verifications",
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "verificationId",
+                "AttributeType": "S"
+            }
+        ],
+        "KeySchema": [
+            {
+                "AttributeName": "verificationId",
+                "KeyType": "HASH"
+            }
+        ],
+        "ProvisionedThroughput": {
+            "ReadCapacityUnits": 1,
+            "WriteCapacityUnits": 1
+        }
+    }
+]
