@@ -54,7 +54,6 @@ export class EnvConfigService {
             this.AWS_SECRET_ACCESS_KEY = this.configService.getOrThrow<string>(
                 'AWS_SECRET_ACCESS_KEY',
             );
-        } else {
             this.LOCAL_AWS_ENDPOINT =
                 this.configService.getOrThrow<string>('LOCAL_AWS_ENDPOINT');
         }
