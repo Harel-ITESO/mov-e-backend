@@ -30,8 +30,8 @@ async function bootstrap() {
     const client = createClient({
         url: process.env.REDIS_SESSION_URL,
         socket: {
-            tls: true,
-            rejectUnauthorized: true,
+            tls: process.env.NODE_ENV === 'production',
+            rejectUnauthorized: process.env.NODE_ENV === 'production',
         },
     });
     await client.connect();
