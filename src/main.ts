@@ -10,6 +10,25 @@ import { EnvConfigService } from './services/env/env-config.service';
 import { RedisStore } from 'connect-redis';
 import { createClient } from 'redis';
 import { InvalidSessionInterceptor } from './interceptors/invalid-session.intercetptor';
+import Redis from 'ioredis';
+
+function getRedisCacheSolution(env: string) {
+    if (env === 'production') {
+        return new Redis.Cluster(
+            [{ host: process.env.REDIS_SESSION_URL, port: 6379 }],
+            {
+                dnsLookup: (address, callback) => callback(null, address),
+                redisOptions: {
+                    tls: {},
+                },
+            },
+        );
+    }
+
+    return createClient({
+        url: process.env.REDIS_SESSION_URL,
+    });
+}
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -27,13 +46,8 @@ async function bootstrap() {
     app.setGlobalPrefix('v1/api');
 
     // Session management
-    const client = createClient({
-        url: process.env.REDIS_SESSION_URL,
-        // socket: {
-        //     tls: process.env.NODE_ENV === 'production',
-        //     rejectUnauthorized: process.env.NODE_ENV === 'production',
-        // },
-    });
+    const client = getRedisCacheSolution(process.env.NODE_ENV || 'development');
+
     await client.connect();
     app.use(
         session({
