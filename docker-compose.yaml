@@ -60,7 +60,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-            target: development
+            # target: production
         container_name: mov-e-api
         environment:
             - REDIS_CACHE_URL=redis://:${REDIS_CACHE_PASSWORD}@mov-e-cache:6379/0

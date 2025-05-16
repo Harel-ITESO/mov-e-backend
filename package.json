@@ -48,7 +48,8 @@
         "redis": "^4.7.0",
         "reflect-metadata": "^0.2.2",
         "rxjs": "^7.8.1",
-        "sib-api-v3-sdk": "^8.5.0"
+        "sib-api-v3-sdk": "^8.5.0",
+        "passport-local": "^1.0.0"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.2.0",
@@ -75,7 +76,6 @@
         "globals": "^15.14.0",
         "husky": "^9.1.7",
         "jest": "^29.7.0",
-        "passport-local": "^1.0.0",
         "prettier": "^3.4.2",
         "prisma": "^6.5.0",
         "source-map-support": "^0.5.21",
