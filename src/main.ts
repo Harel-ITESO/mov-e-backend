@@ -10,24 +10,23 @@ import { EnvConfigService } from './services/env/env-config.service';
 import { RedisStore } from 'connect-redis';
 import { createClient } from 'redis';
 import { InvalidSessionInterceptor } from './interceptors/invalid-session.intercetptor';
-import Redis from 'ioredis';
 
-async function getRedisCacheSolution(env: string) {
-    if (env === 'production') {
-        const sessionUrl = process.env.REDIS_SESSION_URL;
-        console.log(sessionUrl);
-        return new Redis.Cluster([{ host: sessionUrl, port: 6379 }], {
-            dnsLookup: (address, callback) => callback(null, address),
-            redisOptions: {
-                tls: {},
-            },
-        });
-    }
+function getRedisCacheSolution(env: string) {
+    // if (env === 'production') {
+    //     const sessionUrl = process.env.REDIS_SESSION_URL;
+    //     console.log(sessionUrl);
+    //     return new Redis.Cluster([{ host: sessionUrl, port: 6379 }], {
+    //         dnsLookup: (address, callback) => callback(null, address),
+    //         redisOptions: {
+    //             tls: {},
+    //         },
+    //     });
+    // }
+    console.log(env);
 
     const client = createClient({
         url: process.env.REDIS_SESSION_URL,
     });
-    await client.connect();
     return client;
 }
 
@@ -47,9 +46,9 @@ async function bootstrap() {
     app.setGlobalPrefix('v1/api');
 
     // Session management
-    const client = await getRedisCacheSolution(
-        process.env.NODE_ENV || 'development',
-    );
+    const client = getRedisCacheSolution(process.env.NODE_ENV || 'development');
+
+    await client.connect();
 
     app.use(
         session({
